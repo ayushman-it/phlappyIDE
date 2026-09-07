@@ -87,31 +87,21 @@ class AIAudioService {
 
     if (!cleanedText) return;
 
-    // Split text into natural sentences by punctuation (. ! ? \n ।)
-    const rawSentences = cleanedText
-      .split(/(?<=[.!?\n।])\s+/)
-      .map(s => s.trim())
-      .filter(Boolean);
-
-    // If a sentence is long (>220 chars), break down cleanly by clause (comma/semicolon)
+    // Split text into smooth natural speech blocks (150-200 chars for fluid ElevenLabs intonation)
+    const sentences = cleanedText.split(/(?<=[.!?\n।])\s+/).map(s => s.trim()).filter(Boolean);
     const chunks = [];
-    for (const sentence of rawSentences) {
-      if (sentence.length <= 220) {
-        chunks.push(sentence);
+    let currentChunk = '';
+
+    for (const sentence of sentences) {
+      if ((currentChunk + ' ' + sentence).length <= 200) {
+        currentChunk = currentChunk ? currentChunk + ' ' + sentence : sentence;
       } else {
-        const subParts = sentence.split(/(?<=[,;])\s+/).map(s => s.trim()).filter(Boolean);
-        let temp = '';
-        for (const part of subParts) {
-          if ((temp + ' ' + part).length <= 220) {
-            temp = temp ? temp + ' ' + part : part;
-          } else {
-            if (temp) chunks.push(temp);
-            temp = part;
-          }
-        }
-        if (temp) chunks.push(temp);
+        if (currentChunk) chunks.push(currentChunk);
+        currentChunk = sentence;
       }
     }
+    if (currentChunk) chunks.push(currentChunk);
+    if (chunks.length === 0) chunks.push(cleanedText);
 
     for (const chunk of chunks) {
       const textToSpeak = chunk.trim();
@@ -119,8 +109,6 @@ class AIAudioService {
       if (onPauseCheck && onPauseCheck()) break;
 
       await this.speakChunk(textToSpeak, onPauseCheck);
-      // Small natural pause between sentences for human mentor voice pacing
-      await new Promise(r => setTimeout(r, 120));
     }
   }
 
@@ -182,8 +170,8 @@ class AIAudioService {
           text: text,
           model_id: 'eleven_multilingual_v2',
           voice_settings: {
-            stability: 0.65,        // Smooth human mentor voice stability
-            similarity_boost: 0.85, // Ultra-clear Hindi/English clarity
+            stability: 0.50,        // Natural human mentor warmth & smooth voice stability
+            similarity_boost: 0.75, // Natural Hindi/English balance
             style: 0.0,
             use_speaker_boost: true
           }
