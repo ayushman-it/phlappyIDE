@@ -1,11 +1,17 @@
-// AI Speech Audio Service with Web Audio Destination & Clean Stream Capture
+// AI Speech Audio Service with ElevenLabs Voice Integration & Pure Web Audio Destination
+
+const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || '';
+// High Quality Multilingual Voice IDs (George: JBFqnCBsd6RMkjVDRZzb, Jessica: cgSgspJ2msm6clMCkdW9)
+const ELEVENLABS_VOICE_ID = import.meta.env.VITE_ELEVENLABS_VOICE_ID || 'JBFqnCBsd6RMkjVDRZzb';
+const ELEVENLABS_FALLBACK_VOICE = 'cgSgspJ2msm6clMCkdW9';
 
 class AIAudioService {
   constructor() {
     this.audioCtx = null;
     this.destination = null;
     this.masterGain = null;
-    this.currentAudio = null;
+    this.currentBufferSource = null;
+    this.currentAudioElement = null;
   }
 
   init() {
@@ -35,14 +41,23 @@ class AIAudioService {
   }
 
   stopCurrentSpeech() {
-    if (this.currentAudio) {
+    if (this.currentBufferSource) {
       try {
-        this.currentAudio.pause();
-        this.currentAudio.currentTime = 0;
+        this.currentBufferSource.stop();
+        this.currentBufferSource.disconnect();
       } catch (e) {
         // ignore
       }
-      this.currentAudio = null;
+      this.currentBufferSource = null;
+    }
+    if (this.currentAudioElement) {
+      try {
+        this.currentAudioElement.pause();
+        this.currentAudioElement.currentTime = 0;
+      } catch (e) {
+        // ignore
+      }
+      this.currentAudioElement = null;
     }
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
@@ -63,7 +78,8 @@ class AIAudioService {
 
     if (!cleanedText) return;
 
-    const chunks = cleanedText.match(/.{1,160}(?:\s+|$)/g) || [cleanedText];
+    // Split text into chunks suitable for speech synthesis
+    const chunks = cleanedText.match(/.{1,180}(?:\s+|$)/g) || [cleanedText];
 
     for (const chunk of chunks) {
       const textToSpeak = chunk.trim();
@@ -80,57 +96,117 @@ class AIAudioService {
       const safeResolve = () => {
         if (!isResolved) {
           isResolved = true;
-          this.currentAudio = null;
+          this.currentBufferSource = null;
+          this.currentAudioElement = null;
           resolve();
         }
       };
 
-      const primaryUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=hi&client=tw-ob`;
-      const fallbackUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=en&client=tw-ob`;
+      // 1. Attempt ElevenLabs Voice TTS via Web Audio API
+      this.speakElevenLabs(text, ELEVENLABS_VOICE_ID)
+        .then(() => safeResolve())
+        .catch((err1) => {
+          console.warn('ElevenLabs Primary Voice failed, trying fallback voice...', err1);
+          if (onPauseCheck && onPauseCheck()) { safeResolve(); return; }
 
-      const playAudioUrl = (url, onFail) => {
-        // Do NOT set crossOrigin = 'anonymous' because translate.google.com does not include CORS header.
-        // Plain HTML5 Audio element plays clearly through tab audio & speakers.
-        const audio = new Audio(url);
-        audio.playbackRate = 0.95;
-        this.currentAudio = audio;
+          this.speakElevenLabs(text, ELEVENLABS_FALLBACK_VOICE)
+            .then(() => safeResolve())
+            .catch((err2) => {
+              console.warn('ElevenLabs Fallback Voice failed, trying Google TTS...', err2);
+              if (onPauseCheck && onPauseCheck()) { safeResolve(); return; }
 
-        // Route through AudioContext if possible
-        if (this.audioCtx && this.masterGain) {
-          try {
-            const source = this.audioCtx.createMediaElementSource(audio);
-            source.connect(this.masterGain);
-          } catch (e) {
-            // If already connected or cross-origin restricted, Audio element still plays to default output
-          }
-        }
+              // 2. Attempt Google Translate TTS Fallback
+              this.speakGoogleTTS(text, safeResolve, () => {
+                if (onPauseCheck && onPauseCheck()) { safeResolve(); return; }
 
-        audio.onended = safeResolve;
-        audio.onerror = () => onFail();
-
-        audio.play().catch(() => onFail());
-      };
-
-      // Attempt 1: Hindi Google TTS
-      playAudioUrl(primaryUrl, () => {
-        if (onPauseCheck && onPauseCheck()) {
-          safeResolve();
-          return;
-        }
-        // Attempt 2: English Google TTS
-        playAudioUrl(fallbackUrl, () => {
-          if (onPauseCheck && onPauseCheck()) {
-            safeResolve();
-            return;
-          }
-          // Attempt 3: Web Speech API Fallback
-          this.speakWebSpeechFallback(text).then(safeResolve);
+                // 3. Attempt Web Speech API Fallback
+                this.speakWebSpeechFallback(text).then(safeResolve);
+              });
+            });
         });
-      });
 
-      // Safety timeout after 9 seconds per chunk
-      setTimeout(safeResolve, 9000);
+      // Safety timeout per speech chunk (12 seconds max)
+      setTimeout(safeResolve, 12000);
     });
+  }
+
+  async speakElevenLabs(text, voiceId) {
+    if (!ELEVENLABS_API_KEY) throw new Error('No ElevenLabs API Key configured');
+
+    const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': ELEVENLABS_API_KEY,
+        'Content-Type': 'application/json',
+        'Accept': 'audio/mpeg'
+      },
+      body: JSON.stringify({
+        text: text,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.75,
+          style: 0.0,
+          use_speaker_boost: true
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`ElevenLabs API Error (${response.status}): ${errText}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+      throw new Error('Empty audio buffer received from ElevenLabs');
+    }
+
+    return new Promise((resolve, reject) => {
+      this.init();
+      if (!this.audioCtx) return reject(new Error('AudioContext unavailable'));
+
+      this.audioCtx.decodeAudioData(
+        arrayBuffer,
+        (decodedBuffer) => {
+          try {
+            const source = this.audioCtx.createBufferSource();
+            source.buffer = decodedBuffer;
+            source.connect(this.masterGain);
+
+            this.currentBufferSource = source;
+            source.onended = () => resolve();
+            source.start(0);
+          } catch (e) {
+            reject(e);
+          }
+        },
+        (decodeErr) => reject(decodeErr)
+      );
+    });
+  }
+
+  speakGoogleTTS(text, safeResolve, onFail) {
+    const primaryUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=hi&client=tw-ob`;
+
+    const audio = new Audio(primaryUrl);
+    audio.playbackRate = 0.95;
+    this.currentAudioElement = audio;
+
+    if (this.audioCtx && this.masterGain) {
+      try {
+        const source = this.audioCtx.createMediaElementSource(audio);
+        source.connect(this.masterGain);
+      } catch (e) {
+        // ignore if already connected
+      }
+    }
+
+    audio.onended = safeResolve;
+    audio.onerror = () => onFail();
+
+    audio.play().catch(() => onFail());
   }
 
   speakWebSpeechFallback(text) {

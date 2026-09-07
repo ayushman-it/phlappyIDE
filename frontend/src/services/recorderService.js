@@ -1,4 +1,4 @@
-// Screen & Studio Recorder Service with HTML5 Audio Stream Capture & Pure AI Audio
+// Screen & Studio Recorder Service with Persistent Session Control & Robust Error Recovery
 import { aiAudioService } from './aiAudioService';
 import { useStudioStore } from '../store/studioStore';
 
@@ -29,25 +29,22 @@ class RecorderService {
         audio: true
       });
 
-      // 2. Collect Audio Tracks: Tab Audio + Dedicated AI Audio Destination Track
+      // 2. Collect Audio Tracks: Tab Audio + Dedicated Persistent ElevenLabs AI Audio Destination Track
       const audioTracks = [];
 
-      // Add Display Tab Audio if provided by user selection
+      // Add Display Tab Audio if selected by user
       const displayAudioTracks = this.displayStream.getAudioTracks();
       if (displayAudioTracks.length > 0) {
         audioTracks.push(...displayAudioTracks);
       }
 
-      // Add Dedicated AI Audio Track from AIAudioService (Web Audio Destination)
+      // Add Persistent AI Audio Track from AIAudioService
       const aiTrack = aiAudioService.getAudioTrack();
       if (aiTrack) {
         audioTracks.push(aiTrack);
       }
 
-      // NOTE: We intentionally DO NOT request navigator.mediaDevices.getUserMedia (Microphone).
-      // This guarantees ZERO external ambient/room noise ("bahar ka audio nahi") is recorded.
-
-      // 3. Create combined stream for recording
+      // 3. Create combined stream for continuous recording
       const tracksToRecord = [
         ...this.displayStream.getVideoTracks(),
         ...audioTracks
@@ -75,29 +72,56 @@ class RecorderService {
         }
       };
 
+      this.mediaRecorder.onerror = (errEvent) => {
+        console.error('MediaRecorder error encountered:', errEvent);
+        // Attempt recovery if mediaRecorder paused or errored mid-session
+        if (this.isRecording && this.mediaRecorder && this.mediaRecorder.state === 'paused') {
+          try {
+            this.mediaRecorder.resume();
+          } catch (e) {
+            console.warn('MediaRecorder resume failed:', e);
+          }
+        }
+      };
+
+      this.mediaRecorder.onpause = () => {
+        // Prevent accidental browser pausing when switching tabs
+        if (this.isRecording && this.mediaRecorder && this.mediaRecorder.state === 'paused') {
+          try {
+            this.mediaRecorder.resume();
+          } catch (e) {
+            // ignore
+          }
+        }
+      };
+
       this.mediaRecorder.onstop = () => {
         this.saveRecording();
         this.cleanup();
         useStudioStore.getState().setIsRecording(false);
       };
 
-      // Handle user manually stopping screen share via browser UI banner
+      // Guard video track: Only stop if user explicitly stopped browser sharing bar
       const videoTrack = this.displayStream.getVideoTracks()[0];
       if (videoTrack) {
         videoTrack.onended = () => {
-          if (this.isRecording) {
+          if (this.isRecording && videoTrack.readyState === 'ended') {
+            console.warn('Browser video track ended by user banner action');
             this.stopRecording();
           }
         };
       }
 
-      this.mediaRecorder.start(1000); // Collect 1s data slices
+      this.mediaRecorder.start(1000); // Collect 1s slices persistently
       this.isRecording = true;
 
       if (onTick) {
+        if (this.timerInterval) clearInterval(this.timerInterval);
         this.timerInterval = setInterval(() => {
-          this.secondsRecorded++;
-          onTick(this.secondsRecorded);
+          if (this.isRecording) {
+            this.secondsRecorded++;
+            onTick(this.secondsRecorded);
+          }
         }, 1000);
       }
 
@@ -123,8 +147,13 @@ class RecorderService {
       this.timerInterval = null;
     }
 
-    if (this.mediaRecorder.state !== 'inactive') {
-      this.mediaRecorder.stop();
+    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      try {
+        this.mediaRecorder.stop();
+      } catch (e) {
+        console.warn('Error calling mediaRecorder.stop():', e);
+        this.cleanup();
+      }
     }
   }
 
