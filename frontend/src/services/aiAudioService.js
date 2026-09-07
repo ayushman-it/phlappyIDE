@@ -1,6 +1,6 @@
 // AI Speech Audio Service with ElevenLabs Voice Integration & Zero-Echo Audio Destination
 
-const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || 'sk_fb75bb624ad286558e3c26f1198664922079c180091b2690';
+const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || 'sk_a089bd4c4fbc4d9cb64ef33d7504f076e612987559946483';
 // High Quality Built-in ElevenLabs Male Voice IDs (Adam: pNInz6obpgDQGcFmaJgB, George: JBFqnCBsd6RMkjVDRZzb)
 const ELEVENLABS_VOICE_ID = import.meta.env.VITE_ELEVENLABS_VOICE_ID || 'pNInz6obpgDQGcFmaJgB'; // Adam (Guaranteed built-in male voice)
 const ELEVENLABS_FALLBACK_VOICE = 'JBFqnCBsd6RMkjVDRZzb'; // George (Guaranteed built-in male voice)
