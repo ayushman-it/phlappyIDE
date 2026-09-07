@@ -86,7 +86,7 @@ export const useStudioStore = create((set, get) => ({
     })),
 
   // ElevenLabs Key & Performance Usage Tracker
-  elevenLabsKey: localStorage.getItem('PHLAPPY_ELEVENLABS_KEY') || 'sk_a089bd4c4fbc4d9cb64ef33d7504f076e612987559946483',
+  elevenLabsKey: localStorage.getItem('PHLAPPY_ELEVENLABS_KEY') || 'sk_9cb23f239f0b224054d0219fa487207494dde5781ae96f4d',
   setElevenLabsKey: (key) => {
     localStorage.setItem('PHLAPPY_ELEVENLABS_KEY', key);
     set({ elevenLabsKey: key });

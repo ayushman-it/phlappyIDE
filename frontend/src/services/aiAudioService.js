@@ -1,6 +1,6 @@
 import { useStudioStore } from '../store/studioStore';
 
-const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || 'sk_a089bd4c4fbc4d9cb64ef33d7504f076e612987559946483';
+const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || 'sk_9cb23f239f0b224054d0219fa487207494dde5781ae96f4d';
 // High Quality Built-in ElevenLabs Male Voice IDs (Adam: pNInz6obpgDQGcFmaJgB, George: JBFqnCBsd6RMkjVDRZzb)
 const ELEVENLABS_VOICE_ID = import.meta.env.VITE_ELEVENLABS_VOICE_ID || 'pNInz6obpgDQGcFmaJgB'; // Adam (Guaranteed built-in male voice)
 const ELEVENLABS_FALLBACK_VOICE = 'JBFqnCBsd6RMkjVDRZzb'; // George (Guaranteed built-in male voice)
