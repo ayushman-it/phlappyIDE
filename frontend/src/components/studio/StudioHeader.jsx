@@ -22,7 +22,8 @@ export const StudioHeader = () => {
     setAppTheme,
     setIsWelcomeModalOpen,
     elevenLabsKey,
-    elevenLabsUsageChars
+    elevenLabsUsageChars,
+    elevenLabsQuotaInfo
   } = useStudioStore();
 
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
@@ -217,15 +218,29 @@ export const StudioHeader = () => {
         {/* ElevenLabs API Key & Usage Manager Badge */}
         <button
           onClick={() => setIsElevenLabsModalOpen(true)}
-          className={`hidden md:flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${theme.pillBg}`}
-          title="ElevenLabs Key & Credit Usage Manager (Click to Update Key)"
+          className={`hidden md:flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+            elevenLabsQuotaInfo?.isExceeded
+              ? 'bg-rose-900/30 border-rose-600 text-rose-300 animate-pulse'
+              : theme.pillBg
+          }`}
+          title="ElevenLabs Key & Remaining Credit Quota Manager (Click to Change Key)"
         >
-          <Mic className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
+          <Mic className={`w-3.5 h-3.5 ${elevenLabsQuotaInfo?.isExceeded ? 'text-rose-500' : 'text-rose-600 animate-pulse'}`} />
           <span className="font-mono text-[10px]">
             {elevenLabsKey ? `${elevenLabsKey.slice(0, 7)}...` : 'ElevenLabs'}
           </span>
-          <span className="px-1 py-0.2 rounded bg-rose-500/20 text-rose-600 text-[9px] font-extrabold">
-            {elevenLabsUsageChars > 0 ? `${elevenLabsUsageChars} Chars` : 'Active'}
+          <span className={`px-1 py-0.2 rounded text-[9px] font-extrabold ${
+            elevenLabsQuotaInfo?.isExceeded
+              ? 'bg-rose-600 text-white'
+              : 'bg-rose-500/20 text-rose-600'
+          }`}>
+            {elevenLabsQuotaInfo?.isExceeded
+              ? '🔴 0 Credits'
+              : elevenLabsQuotaInfo?.statusText
+              ? elevenLabsQuotaInfo.statusText
+              : elevenLabsUsageChars > 0
+              ? `${elevenLabsUsageChars} Chars`
+              : 'Active'}
           </span>
         </button>
 

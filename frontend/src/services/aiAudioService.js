@@ -1,4 +1,4 @@
-// AI Speech Audio Service with ElevenLabs Voice Integration & Zero-Echo Audio Destination
+import { useStudioStore } from '../store/studioStore';
 
 const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || 'sk_a089bd4c4fbc4d9cb64ef33d7504f076e612987559946483';
 // High Quality Built-in ElevenLabs Male Voice IDs (Adam: pNInz6obpgDQGcFmaJgB, George: JBFqnCBsd6RMkjVDRZzb)
@@ -202,6 +202,13 @@ class AIAudioService {
         const errText = await response.text();
         if (response.status === 401 && errText.includes('quota_exceeded')) {
           console.error('ElevenLabs API Error: Credit Quota Exceeded for key', activeApiKey);
+          useStudioStore.getState().setElevenLabsQuotaInfo({
+            statusText: 'Quota Exceeded (0 Credits)',
+            remainingQuota: 0,
+            characterLimit: 0,
+            isExceeded: true,
+            isValid: false
+          });
         }
         throw new Error(`ElevenLabs API Error (${response.status}): ${errText}`);
       }

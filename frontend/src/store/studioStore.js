@@ -90,9 +90,121 @@ export const useStudioStore = create((set, get) => ({
   setElevenLabsKey: (key) => {
     localStorage.setItem('PHLAPPY_ELEVENLABS_KEY', key);
     set({ elevenLabsKey: key });
+    get().checkKeyQuota(key);
   },
   elevenLabsUsageChars: 0,
   addElevenLabsChars: (count) => set((state) => ({ elevenLabsUsageChars: state.elevenLabsUsageChars + count })),
+  elevenLabsQuotaInfo: {
+    statusText: 'Checking Quota...',
+    remainingQuota: null,
+    characterLimit: null,
+    characterCount: 0,
+    isExceeded: false,
+    isValid: true,
+    hasFullDetails: false
+  },
+  setElevenLabsQuotaInfo: (info) => set((state) => ({
+    elevenLabsQuotaInfo: typeof info === 'function' ? info(state.elevenLabsQuotaInfo) : { ...state.elevenLabsQuotaInfo, ...info }
+  })),
+  checkKeyQuota: async (targetKey) => {
+    const keyToTest = targetKey || get().elevenLabsKey;
+    if (!keyToTest) {
+      set({
+        elevenLabsQuotaInfo: {
+          statusText: 'No Key Configured',
+          remainingQuota: 0,
+          characterLimit: 0,
+          characterCount: 0,
+          isExceeded: true,
+          isValid: false,
+          hasFullDetails: false
+        }
+      });
+      return { ok: false };
+    }
+
+    try {
+      const subRes = await fetch('https://api.elevenlabs.io/v1/user/subscription', {
+        headers: { 'xi-api-key': keyToTest }
+      });
+
+      if (subRes.ok) {
+        const data = await subRes.json();
+        const count = data.character_count || 0;
+        const limit = data.character_limit || 0;
+        const remaining = Math.max(0, limit - count);
+        const isExceeded = remaining <= 0;
+
+        set({
+          elevenLabsQuotaInfo: {
+            statusText: `${remaining.toLocaleString()} / ${limit.toLocaleString()} Chars`,
+            remainingQuota: remaining,
+            characterLimit: limit,
+            characterCount: count,
+            isExceeded,
+            isValid: !isExceeded,
+            hasFullDetails: true
+          }
+        });
+        return { ok: true, remaining, limit, hasFullDetails: true };
+      }
+
+      const ttsRes = await fetch('https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB', {
+        method: 'POST',
+        headers: {
+          'xi-api-key': keyToTest,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: '.',
+          model_id: 'eleven_multilingual_v2'
+        })
+      });
+
+      if (ttsRes.ok) {
+        set({
+          elevenLabsQuotaInfo: {
+            statusText: 'Active Quota Available',
+            remainingQuota: null,
+            characterLimit: null,
+            characterCount: get().elevenLabsUsageChars,
+            isExceeded: false,
+            isValid: true,
+            hasFullDetails: false
+          }
+        });
+        return { ok: true, hasFullDetails: false };
+      } else {
+        const errText = await ttsRes.text();
+        const isQuotaErr = ttsRes.status === 401 && errText.includes('quota_exceeded');
+        set({
+          elevenLabsQuotaInfo: {
+            statusText: isQuotaErr ? 'Quota Exceeded (0 Credits)' : `Error (${ttsRes.status})`,
+            remainingQuota: 0,
+            characterLimit: 0,
+            characterCount: 0,
+            isExceeded: isQuotaErr,
+            isValid: false,
+            hasFullDetails: false
+          }
+        });
+        return { ok: false, error: errText, isQuotaExceeded: isQuotaErr };
+      }
+    } catch (err) {
+      set({
+        elevenLabsQuotaInfo: {
+          statusText: 'Network Error',
+          remainingQuota: 0,
+          characterLimit: 0,
+          characterCount: 0,
+          isExceeded: false,
+          isValid: false,
+          hasFullDetails: false
+        }
+      });
+      return { ok: false, error: err.message };
+    }
+  },
 
   // Topic Bar & Generation State
   currentTopicInput: '',
