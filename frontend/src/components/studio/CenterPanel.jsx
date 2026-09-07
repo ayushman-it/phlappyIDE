@@ -167,26 +167,6 @@ export const CenterPanel = () => {
           />
         </div>
       )}
-
-      {/* Bottom IDE Status Bar */}
-      <div className={`h-6 ${theme.statusBarBg} px-3 flex items-center justify-between text-[10px] font-mono flex-shrink-0 transition-colors`}>
-        <div className="flex items-center space-x-4 opacity-90">
-          <span className="flex items-center font-bold">
-            <Terminal className="w-3 h-3 mr-1" />
-            {getLanguage(activeFile).toUpperCase()}
-          </span>
-          <span>Lines: <strong>{currentLineCount}</strong></span>
-          <span>Spaces: 2</span>
-          <span>UTF-8</span>
-        </div>
-
-        <div className="flex items-center space-x-3 opacity-90">
-          <span className="flex items-center font-bold">
-            <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-300" /> Ready
-          </span>
-          <span>Font: <strong>{editorFontSize}px</strong></span>
-        </div>
-      </div>
     </main>
   );
 };

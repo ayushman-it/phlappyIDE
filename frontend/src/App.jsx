@@ -4,6 +4,7 @@ import { TopicBar } from './components/studio/TopicBar';
 import { LeftPanel } from './components/studio/LeftPanel';
 import { CenterPanel } from './components/studio/CenterPanel';
 import { RightPanel } from './components/studio/RightPanel';
+import { StudioFooter } from './components/studio/StudioFooter';
 import { FlappyWidget } from './components/studio/FlappyWidget';
 import { VirtualCursor } from './components/studio/VirtualCursor';
 import { GenerateModal } from './components/studio/GenerateModal';
@@ -29,6 +30,9 @@ export default function App() {
         {/* Automatic Animated Virtual Mouse Pointer */}
         <VirtualCursor />
       </div>
+
+      {/* Unified Global VS Code Footer Status Bar */}
+      <StudioFooter />
 
       {/* AI Lesson Generator Modal */}
       <GenerateModal />
