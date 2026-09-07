@@ -158,8 +158,8 @@ export const LeftPanel = () => {
         <div className="relative flex flex-col items-center">
           {/* Theme Selector Popup Menu */}
           {isThemeMenuOpen && (
-            <div className="absolute bottom-10 left-12 z-50 w-56 rounded-2xl bg-white border border-slate-200 shadow-2xl p-2 animate-in fade-in slide-in-from-bottom-2 duration-150">
-              <div className="px-2 py-1 border-b border-slate-100 mb-1 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
+            <div className={`absolute bottom-10 left-12 z-50 w-56 rounded-2xl border shadow-2xl p-2 animate-in fade-in slide-in-from-bottom-2 duration-150 ${theme.dropdownBg}`}>
+              <div className={`px-2 py-1 border-b mb-1 text-[11px] font-extrabold uppercase tracking-wider ${theme.textMuted}`}>
                 Select IDE Theme
               </div>
               {THEME_OPTIONS.map((t) => (
@@ -171,11 +171,11 @@ export const LeftPanel = () => {
                   }}
                   className={`w-full flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
                     appTheme === t.id
-                      ? 'bg-rose-50 text-rose-600 border border-rose-200'
-                      : 'text-slate-700 hover:bg-slate-100'
+                      ? `${theme.badgeBg} font-extrabold`
+                      : `hover:opacity-100 ${theme.textMuted}`
                   }`}
                 >
-                  <span className="text-base">{t.icon}</span>
+                  <Palette className="w-3.5 h-3.5 text-rose-600" />
                   <span>{t.name}</span>
                 </button>
               ))}

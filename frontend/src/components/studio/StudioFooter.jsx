@@ -1,7 +1,7 @@
 import React from 'react';
 import { useStudioStore } from '../../store/studioStore';
 import { getThemeClasses } from '../../utils/themeStyles';
-import { Terminal, GitBranch, CheckCircle2, Sparkles, Cpu, Video } from 'lucide-react';
+import { Terminal, GitBranch, CheckCircle2, Sparkles, Cpu, Radio, CircleDot } from 'lucide-react';
 
 export const StudioFooter = () => {
   const {
@@ -41,7 +41,7 @@ export const StudioFooter = () => {
           className="bg-black/20 hover:bg-black/30 px-2 py-0.5 rounded flex items-center space-x-1 cursor-pointer transition-colors text-[10px] font-bold"
           title="Phlappy AI Sandbox Connected"
         >
-          <span className="text-emerald-300 font-extrabold text-[12px] leading-none">＞＜</span>
+          <Radio className="w-3 h-3 text-emerald-300 animate-pulse" />
           <span className="font-sans font-extrabold">Phlappy AI</span>
         </button>
 
@@ -69,8 +69,8 @@ export const StudioFooter = () => {
         {/* Recording Status (if recording) */}
         {isRecording && (
           <div className="flex items-center space-x-1 bg-red-600 text-white px-2 py-0.5 rounded text-[10px] font-extrabold animate-pulse">
-            <Video className="w-3 h-3" />
-            <span>REC ({Math.floor(recordDuration / 60)}:{String(recordDuration % 60).padStart(2, '0')})</span>
+            <CircleDot className="w-3 h-3 text-white animate-ping" />
+            <span>REC ({Math.floor(recordDuration / 60)}:${String(recordDuration % 60).padStart(2, '0')})</span>
           </div>
         )}
       </div>

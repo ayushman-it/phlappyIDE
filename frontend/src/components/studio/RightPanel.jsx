@@ -52,7 +52,9 @@ export const RightPanel = () => {
   const generateIframeContent = () => {
     const html = files['index.html'] || `<div style="font-family: -apple-system, sans-serif; display: flex; height: 80vh; align-items: center; justify-content: center; text-align: center; color: #94a3b8; font-size: 13px;">
       <div style="background: white; padding: 24px 32px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
-        <div style="font-size: 28px; margin-bottom: 8px;">🚀</div>
+        <div style="display: inline-flex; padding: 10px; border-radius: 12px; background: #fff1f2; margin-bottom: 8px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4-4-4v8z"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>
+        </div>
         <h4 style="margin: 0 0 6px 0; color: #334155; font-size: 14px; font-weight: 700;">Sandboxed Preview Ready</h4>
         <p style="margin: 0; font-size: 12px; color: #64748b;">Enter a topic above to generate live HTML/CSS/JS preview!</p>
       </div>

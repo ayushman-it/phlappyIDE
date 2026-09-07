@@ -131,8 +131,8 @@ export const GenerateModal = () => {
                 : 'border-transparent text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Sparkles className="w-4 h-4" />
-            <span>🤖 AI Prompt Generator</span>
+            <Sparkles className="w-4 h-4 text-rose-600" />
+            <span>AI Prompt Generator</span>
           </button>
 
           <button
@@ -143,8 +143,8 @@ export const GenerateModal = () => {
                 : 'border-transparent text-slate-600 hover:text-slate-900'
             }`}
           >
-            <FileCode className="w-4 h-4" />
-            <span>📝 Custom 3-Min Script & Presets</span>
+            <FileCode className="w-4 h-4 text-rose-600" />
+            <span>Custom 3-Min Script & Presets</span>
           </button>
         </div>
 
