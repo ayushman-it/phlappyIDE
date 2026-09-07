@@ -127,14 +127,14 @@ export const CenterPanel = () => {
 
       {/* Monaco Code Editor Container */}
       {!activeFile || Object.keys(files).length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center select-none">
-          <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-100 shadow-xs flex items-center justify-center mb-4">
+        <div className={`flex-1 flex flex-col items-center justify-center p-8 ${theme.editorBg} text-center select-none`}>
+          <div className={`w-14 h-14 rounded-2xl ${theme.badgeBg} shadow-xs flex items-center justify-center mb-4 border`}>
             <Sparkles className="w-7 h-7 text-rose-600 animate-pulse" />
           </div>
-          <h3 className="text-base font-black mb-1.5 tracking-tight">
+          <h3 className={`text-base font-black mb-1.5 tracking-tight ${appTheme === 'vscode-dark' ? 'text-white' : ''}`}>
             Welcome to TCM<span className="text-rose-600">One</span> Phlappy AI Code Studio
           </h3>
-          <p className="text-xs opacity-70 max-w-sm mb-4 leading-relaxed font-medium">
+          <p className={`text-xs ${theme.textMuted} max-w-sm mb-4 leading-relaxed font-medium`}>
             Topic bar me koi bhi topic type kijiye aur Phlappy HD clean code aur definition comments ke saath sikhayega!
           </p>
         </div>

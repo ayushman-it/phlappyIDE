@@ -50,13 +50,23 @@ export const RightPanel = () => {
   }, [addConsoleLog]);
 
   const generateIframeContent = () => {
-    const html = files['index.html'] || `<div style="font-family: -apple-system, sans-serif; display: flex; height: 80vh; align-items: center; justify-content: center; text-align: center; color: #94a3b8; font-size: 13px;">
-      <div style="background: white; padding: 24px 32px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
-        <div style="display: inline-flex; padding: 10px; border-radius: 12px; background: #fff1f2; margin-bottom: 8px;">
+    const isDark = appTheme === 'vscode-dark';
+    const isCoffee = appTheme === 'coffee';
+
+    const bodyBg = isDark ? '#1e1e1e' : isCoffee ? '#fffdf9' : '#f8fafc';
+    const cardBg = isDark ? '#252526' : isCoffee ? '#faf6f0' : '#ffffff';
+    const borderColor = isDark ? '#3c3c3c' : isCoffee ? '#dfd4c3' : '#e2e8f0';
+    const titleColor = isDark ? '#ffffff' : isCoffee ? '#4a3b32' : '#334155';
+    const textColor = isDark ? '#aaaaaa' : isCoffee ? '#6f5a4c' : '#64748b';
+    const iconBg = isDark ? '#332025' : isCoffee ? '#f4efe8' : '#fff1f2';
+
+    const html = files['index.html'] || `<div style="font-family: -apple-system, sans-serif; display: flex; height: 80vh; align-items: center; justify-content: center; text-align: center; color: ${textColor}; font-size: 13px; background: ${bodyBg};">
+      <div style="background: ${cardBg}; padding: 24px 32px; border-radius: 16px; border: 1px solid ${borderColor}; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        <div style="display: inline-flex; padding: 10px; border-radius: 12px; background: ${iconBg}; margin-bottom: 8px;">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4-4-4v8z"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>
         </div>
-        <h4 style="margin: 0 0 6px 0; color: #334155; font-size: 14px; font-weight: 700;">Sandboxed Preview Ready</h4>
-        <p style="margin: 0; font-size: 12px; color: #64748b;">Enter a topic above to generate live HTML/CSS/JS preview!</p>
+        <h4 style="margin: 0 0 6px 0; color: ${titleColor}; font-size: 14px; font-weight: 700;">Sandboxed Preview Ready</h4>
+        <p style="margin: 0; font-size: 12px; color: ${textColor};">Enter a topic above to generate live HTML/CSS/JS preview!</p>
       </div>
     </div>`;
     const css = files['style.css'] || '';
@@ -67,7 +77,7 @@ export const RightPanel = () => {
       <html>
         <head>
           <meta charset="utf-8" />
-          <style>${css}</style>
+          <style>body { background: ${bodyBg}; color: ${titleColor}; margin: 0; padding: 0; } ${css}</style>
           <script>
             (function() {
               function sendToParent(logType, args) {
@@ -118,14 +128,14 @@ export const RightPanel = () => {
   };
 
   return (
-    <aside className={`w-[420px] ${theme.sidebarBg} border-l border-slate-200/60 flex flex-col h-full select-none transition-colors`}>
+    <aside className={`w-[420px] ${theme.sidebarBg} border-l border-slate-200/40 flex flex-col h-full select-none transition-colors`}>
       {/* IDE Compact Right Panel Tab Headers */}
-      <div className={`flex border-b border-slate-200/60 ${theme.tabsBg} h-8 transition-colors`}>
+      <div className={`flex border-b border-slate-200/40 ${theme.tabsBg} h-8 transition-colors`}>
         <button
           onClick={() => setActiveRightTab('preview')}
-          className={`flex-1 h-full text-[11px] font-bold flex items-center justify-center space-x-1 border-b-2 transition-colors cursor-pointer ${
+          className={`flex-1 h-full text-[11px] font-bold flex items-center justify-center space-x-1 border-b-2 transition-all cursor-pointer ${
             activeRightTab === 'preview'
-              ? 'border-rose-600 text-rose-600 bg-white/40 font-extrabold'
+              ? `${theme.tabActive}`
               : 'border-transparent opacity-70 hover:opacity-100'
           }`}
         >
@@ -135,9 +145,9 @@ export const RightPanel = () => {
 
         <button
           onClick={() => setActiveRightTab('console')}
-          className={`flex-1 h-full text-[11px] font-bold flex items-center justify-center space-x-1 border-b-2 transition-colors cursor-pointer relative ${
+          className={`flex-1 h-full text-[11px] font-bold flex items-center justify-center space-x-1 border-b-2 transition-all cursor-pointer relative ${
             activeRightTab === 'console'
-              ? 'border-rose-600 text-rose-600 bg-white/40 font-extrabold'
+              ? `${theme.tabActive}`
               : 'border-transparent opacity-70 hover:opacity-100'
           }`}
         >
@@ -150,9 +160,9 @@ export const RightPanel = () => {
 
         <button
           onClick={() => setActiveRightTab('terminal')}
-          className={`flex-1 h-full text-[11px] font-bold flex items-center justify-center space-x-1 border-b-2 transition-colors cursor-pointer ${
+          className={`flex-1 h-full text-[11px] font-bold flex items-center justify-center space-x-1 border-b-2 transition-all cursor-pointer ${
             activeRightTab === 'terminal'
-              ? 'border-rose-600 text-rose-600 bg-white/40 font-extrabold'
+              ? `${theme.tabActive}`
               : 'border-transparent opacity-70 hover:opacity-100'
           }`}
         >
@@ -165,19 +175,19 @@ export const RightPanel = () => {
       <div className="flex-1 overflow-hidden relative">
         {/* PREVIEW TAB */}
         {activeRightTab === 'preview' && (
-          <div className="h-full flex flex-col bg-white">
-            <div className="px-3 py-1.5 bg-slate-100/60 border-b border-slate-200 text-[10px] font-semibold text-slate-500 flex items-center justify-between">
-              <span>Sandboxed Preview Document</span>
-              <span className="text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded text-[9px]">
+          <div className={`h-full flex flex-col ${theme.editorBg}`}>
+            <div className={`px-3 py-1.5 ${theme.topicBarBg} border-b border-slate-200/40 text-[10px] font-semibold flex items-center justify-between`}>
+              <span className={theme.textMuted}>Sandboxed Preview Document</span>
+              <span className={`font-bold px-1.5 py-0.5 rounded text-[9px] ${theme.badgeBg}`}>
                 Live Sync
               </span>
             </div>
-            <div className="flex-1 p-2 bg-slate-200/50">
+            <div className={`flex-1 p-2 ${theme.sidebarBg}`}>
               <iframe
                 id="sandbox-preview-iframe"
                 title="Sandboxed Preview"
                 srcDoc={generateIframeContent()}
-                className="w-full h-full bg-white rounded-lg border border-slate-300 shadow-xs"
+                className={`w-full h-full ${theme.editorBg} rounded-lg border border-slate-200/40 shadow-xs`}
                 sandbox="allow-scripts allow-same-origin"
               />
             </div>
