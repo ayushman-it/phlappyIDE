@@ -107,14 +107,19 @@ class AIAudioService {
     if (currentChunk) chunks.push(currentChunk);
     if (chunks.length === 0) chunks.push(cleanedText);
 
-    for (const chunk of chunks) {
-      const textToSpeak = chunk.trim();
+    for (let i = 0; i < chunks.length; i++) {
+      const textToSpeak = chunks[i].trim();
       if (!textToSpeak) continue;
       // Guarantee loop cancellation if a new speech was triggered
       if (this.speechSessionId !== activeSessionId) break;
       if (onPauseCheck && onPauseCheck()) break;
 
       await this.speakChunk(textToSpeak, onPauseCheck, activeSessionId);
+
+      // Natural human breath pause (500ms) between sentences
+      if (i < chunks.length - 1 && this.speechSessionId === activeSessionId && !(onPauseCheck && onPauseCheck())) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
     }
   }
 
@@ -144,15 +149,17 @@ class AIAudioService {
       };
 
       // 1. Attempt ElevenLabs Voice TTS via Web Audio API
-      this.speakElevenLabs(text, ELEVENLABS_VOICE_ID)
+      this.speakElevenLabs(text, ELEVENLABS_VOICE_ID, sessionId)
         .then(() => doneHandler())
         .catch((err1) => {
+          if (this.speechSessionId !== sessionId) { doneHandler(); return; }
           console.warn('ElevenLabs Primary Voice failed:', err1.message || err1);
           if (onPauseCheck && onPauseCheck()) { doneHandler(); return; }
 
-          this.speakElevenLabs(text, ELEVENLABS_FALLBACK_VOICE)
+          this.speakElevenLabs(text, ELEVENLABS_FALLBACK_VOICE, sessionId)
             .then(() => doneHandler())
             .catch((err2) => {
+              if (this.speechSessionId !== sessionId) { doneHandler(); return; }
               console.warn('ElevenLabs Fallback Voice failed:', err2.message || err2);
               if (onPauseCheck && onPauseCheck()) { doneHandler(); return; }
 
@@ -168,7 +175,7 @@ class AIAudioService {
     });
   }
 
-  async speakElevenLabs(text, voiceId) {
+  async speakElevenLabs(text, voiceId, activeSessionId) {
     const activeApiKey = useStudioStore.getState().elevenLabsKey || ELEVENLABS_API_KEY;
     const cacheKey = `${voiceId}:${text}`;
     let arrayBuffer;
@@ -177,6 +184,9 @@ class AIAudioService {
       arrayBuffer = this.audioCache.get(cacheKey).slice(0);
     } else {
       if (!activeApiKey) throw new Error('No ElevenLabs API Key configured');
+      if (activeSessionId !== undefined && this.speechSessionId !== activeSessionId) {
+        throw new Error('Speech session invalidated before request');
+      }
 
       const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
       const response = await fetch(url, {
@@ -190,13 +200,17 @@ class AIAudioService {
           text: text,
           model_id: 'eleven_multilingual_v2',
           voice_settings: {
-            stability: 0.50,        // Natural human mentor warmth & smooth voice stability
+            stability: 0.55,        // Natural human mentor warmth & smooth voice stability
             similarity_boost: 0.75, // Natural Hindi/English balance
             style: 0.0,
             use_speaker_boost: true
           }
         })
       });
+
+      if (activeSessionId !== undefined && this.speechSessionId !== activeSessionId) {
+        throw new Error('Speech session invalidated after fetch');
+      }
 
       if (!response.ok) {
         const errText = await response.text();
@@ -218,6 +232,10 @@ class AIAudioService {
         throw new Error('Empty audio buffer received from ElevenLabs');
       }
 
+      if (activeSessionId !== undefined && this.speechSessionId !== activeSessionId) {
+        throw new Error('Speech session invalidated after arrayBuffer');
+      }
+
       // Track character usage in studioStore
       useStudioStore.getState().addElevenLabsChars(text.length);
 
@@ -232,11 +250,28 @@ class AIAudioService {
     return new Promise((resolve, reject) => {
       this.init();
       if (!this.audioCtx) return reject(new Error('AudioContext unavailable'));
+      if (activeSessionId !== undefined && this.speechSessionId !== activeSessionId) {
+        return resolve();
+      }
 
       this.audioCtx.decodeAudioData(
         arrayBuffer,
         (decodedBuffer) => {
           try {
+            if (activeSessionId !== undefined && this.speechSessionId !== activeSessionId) {
+              return resolve();
+            }
+
+            // Immediately stop any currently playing buffer source to guarantee zero overlap
+            if (this.currentBufferSource) {
+              try {
+                this.currentBufferSource.onended = null;
+                this.currentBufferSource.stop(0);
+                this.currentBufferSource.disconnect();
+              } catch (e) {}
+              this.currentBufferSource = null;
+            }
+
             // Create single Web Audio BufferSource Node connected directly to masterGain
             const source = this.audioCtx.createBufferSource();
             source.buffer = decodedBuffer;

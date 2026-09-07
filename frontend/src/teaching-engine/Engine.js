@@ -475,7 +475,8 @@ class TeachingEngine {
       const nextIndex = currentStepIndex + 1;
       store.setCurrentStepIndex(nextIndex);
       if (nextIndex < lesson.steps.length) {
-        this.timer = setTimeout(() => this.executeCurrentStep(lesson), 1600);
+        // Comfortable 2-second transition delay between steps
+        this.timer = setTimeout(() => this.executeCurrentStep(lesson), 2000);
       } else {
         store.setFlappySpeech('Lesson completed successfully!', 'idle');
         store.setIsPlaying(false);
@@ -496,11 +497,17 @@ class TeachingEngine {
     switch (step.type) {
       case 'speak':
       case 'explain':
-      case 'conclude':
         store.setFlappySpeech(step.text || 'Phlappy AI Teacher explaining concept...', 'speaking');
-        await this.delay(400); // Gentle prep delay before audio speech starts
+        await this.delay(500); // Gentle prep delay before audio speech starts
         await this.speakSpeech(step.text || '');
-        await this.delay(800); // Comfortable pause after speech finishes
+        await this.delay(1400); // Comfortable human pause (1.4s) after sentence explanation
+        break;
+
+      case 'conclude':
+        store.setFlappySpeech(step.text || 'Phlappy AI Teacher concluding topic...', 'speaking');
+        await this.delay(500);
+        await this.speakSpeech(step.text || '');
+        await this.delay(3000); // Dedicated 3-second topic completion pause
         break;
 
       case 'open_file':
