@@ -169,19 +169,20 @@ class AIAudioService {
   }
 
   async speakElevenLabs(text, voiceId) {
+    const activeApiKey = useStudioStore.getState().elevenLabsKey || ELEVENLABS_API_KEY;
     const cacheKey = `${voiceId}:${text}`;
     let arrayBuffer;
 
     if (this.audioCache.has(cacheKey)) {
       arrayBuffer = this.audioCache.get(cacheKey).slice(0);
     } else {
-      if (!ELEVENLABS_API_KEY) throw new Error('No ElevenLabs API Key configured');
+      if (!activeApiKey) throw new Error('No ElevenLabs API Key configured');
 
       const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'xi-api-key': ELEVENLABS_API_KEY,
+          'xi-api-key': activeApiKey,
           'Content-Type': 'application/json',
           'Accept': 'audio/mpeg'
         },
@@ -200,7 +201,7 @@ class AIAudioService {
       if (!response.ok) {
         const errText = await response.text();
         if (response.status === 401 && errText.includes('quota_exceeded')) {
-          console.error('ElevenLabs API Error: Credit Quota Exceeded for key', ELEVENLABS_API_KEY);
+          console.error('ElevenLabs API Error: Credit Quota Exceeded for key', activeApiKey);
         }
         throw new Error(`ElevenLabs API Error (${response.status}): ${errText}`);
       }
@@ -209,6 +210,9 @@ class AIAudioService {
       if (!arrayBuffer || arrayBuffer.byteLength === 0) {
         throw new Error('Empty audio buffer received from ElevenLabs');
       }
+
+      // Track character usage in studioStore
+      useStudioStore.getState().addElevenLabsChars(text.length);
 
       // Maintain up to 50 audio buffers in cache
       if (this.audioCache.size >= 50) {

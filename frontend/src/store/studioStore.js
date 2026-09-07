@@ -85,6 +85,15 @@ export const useStudioStore = create((set, get) => ({
       flappyState: { ...state.flappyState, speechText: text, status }
     })),
 
+  // ElevenLabs Key & Performance Usage Tracker
+  elevenLabsKey: localStorage.getItem('PHLAPPY_ELEVENLABS_KEY') || 'sk_a089bd4c4fbc4d9cb64ef33d7504f076e612987559946483',
+  setElevenLabsKey: (key) => {
+    localStorage.setItem('PHLAPPY_ELEVENLABS_KEY', key);
+    set({ elevenLabsKey: key });
+  },
+  elevenLabsUsageChars: 0,
+  addElevenLabsChars: (count) => set((state) => ({ elevenLabsUsageChars: state.elevenLabsUsageChars + count })),
+
   // Topic Bar & Generation State
   currentTopicInput: '',
   setCurrentTopicInput: (topic) => set({ currentTopicInput: topic }),

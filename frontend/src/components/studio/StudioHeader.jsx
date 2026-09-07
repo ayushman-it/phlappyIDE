@@ -4,7 +4,8 @@ import { engineInstance } from '../../teaching-engine/Engine';
 import { recorderInstance } from '../../services/recorderService';
 import { aiAudioService } from '../../services/aiAudioService';
 import { getThemeClasses, THEME_OPTIONS } from '../../utils/themeStyles';
-import { Play, Pause, RotateCcw, Video, Layers, FileCode, Palette, ChevronDown, Sun, Coffee, Moon, Sparkles, CircleDot, HelpCircle } from 'lucide-react';
+import { ElevenLabsKeyModal } from './ElevenLabsKeyModal';
+import { Play, Pause, RotateCcw, Video, Layers, FileCode, Palette, ChevronDown, Sun, Coffee, Moon, Sparkles, CircleDot, HelpCircle, Mic, Key } from 'lucide-react';
 
 export const StudioHeader = () => {
   const {
@@ -19,10 +20,13 @@ export const StudioHeader = () => {
     activeLessonData,
     appTheme,
     setAppTheme,
-    setIsWelcomeModalOpen
+    setIsWelcomeModalOpen,
+    elevenLabsKey,
+    elevenLabsUsageChars
   } = useStudioStore();
 
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
+  const [isElevenLabsModalOpen, setIsElevenLabsModalOpen] = useState(false);
   const theme = getThemeClasses(appTheme);
 
   const totalSteps = activeLessonData?.steps?.length || 0;
@@ -210,6 +214,21 @@ export const StudioHeader = () => {
           )}
         </div>
 
+        {/* ElevenLabs API Key & Usage Manager Badge */}
+        <button
+          onClick={() => setIsElevenLabsModalOpen(true)}
+          className={`hidden md:flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${theme.pillBg}`}
+          title="ElevenLabs Key & Credit Usage Manager (Click to Update Key)"
+        >
+          <Mic className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
+          <span className="font-mono text-[10px]">
+            {elevenLabsKey ? `${elevenLabsKey.slice(0, 7)}...` : 'ElevenLabs'}
+          </span>
+          <span className="px-1 py-0.2 rounded bg-rose-500/20 text-rose-600 text-[9px] font-extrabold">
+            {elevenLabsUsageChars > 0 ? `${elevenLabsUsageChars} Chars` : 'Active'}
+          </span>
+        </button>
+
         {/* Studio Help / Intro Modal Trigger */}
         <button
           onClick={() => setIsWelcomeModalOpen(true)}
@@ -251,6 +270,12 @@ export const StudioHeader = () => {
           </span>
         </button>
       </div>
+
+      {/* ElevenLabs Key & Performance Manager Modal */}
+      <ElevenLabsKeyModal
+        isOpen={isElevenLabsModalOpen}
+        onClose={() => setIsElevenLabsModalOpen(false)}
+      />
     </header>
   );
 };
