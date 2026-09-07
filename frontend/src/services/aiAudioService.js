@@ -12,6 +12,7 @@ class AIAudioService {
     this.masterGain = null;
     this.currentBufferSource = null;
     this.currentAudioElement = null;
+    this.audioCache = new Map();
   }
 
   init() {
@@ -86,8 +87,31 @@ class AIAudioService {
 
     if (!cleanedText) return;
 
-    // Split text into smooth chunks (max 200 chars for optimal pacing)
-    const chunks = cleanedText.match(/.{1,200}(?:\s+|$)/g) || [cleanedText];
+    // Split text into natural sentences by punctuation (. ! ? \n ।)
+    const rawSentences = cleanedText
+      .split(/(?<=[.!?\n।])\s+/)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    // If a sentence is long (>220 chars), break down cleanly by clause (comma/semicolon)
+    const chunks = [];
+    for (const sentence of rawSentences) {
+      if (sentence.length <= 220) {
+        chunks.push(sentence);
+      } else {
+        const subParts = sentence.split(/(?<=[,;])\s+/).map(s => s.trim()).filter(Boolean);
+        let temp = '';
+        for (const part of subParts) {
+          if ((temp + ' ' + part).length <= 220) {
+            temp = temp ? temp + ' ' + part : part;
+          } else {
+            if (temp) chunks.push(temp);
+            temp = part;
+          }
+        }
+        if (temp) chunks.push(temp);
+      }
+    }
 
     for (const chunk of chunks) {
       const textToSpeak = chunk.trim();
@@ -95,6 +119,8 @@ class AIAudioService {
       if (onPauseCheck && onPauseCheck()) break;
 
       await this.speakChunk(textToSpeak, onPauseCheck);
+      // Small natural pause between sentences for human mentor voice pacing
+      await new Promise(r => setTimeout(r, 120));
     }
   }
 
@@ -136,36 +162,50 @@ class AIAudioService {
   }
 
   async speakElevenLabs(text, voiceId) {
-    if (!ELEVENLABS_API_KEY) throw new Error('No ElevenLabs API Key configured');
+    const cacheKey = `${voiceId}:${text}`;
+    let arrayBuffer;
 
-    const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'xi-api-key': ELEVENLABS_API_KEY,
-        'Content-Type': 'application/json',
-        'Accept': 'audio/mpeg'
-      },
-      body: JSON.stringify({
-        text: text,
-        model_id: 'eleven_multilingual_v2',
-        voice_settings: {
-          stability: 0.70,        // Smooth, stable mentor tone
-          similarity_boost: 0.80, // High clarity & crisp pronunciation
-          style: 0.0,
-          use_speaker_boost: true
-        }
-      })
-    });
+    if (this.audioCache.has(cacheKey)) {
+      arrayBuffer = this.audioCache.get(cacheKey).slice(0);
+    } else {
+      if (!ELEVENLABS_API_KEY) throw new Error('No ElevenLabs API Key configured');
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`ElevenLabs API Error (${response.status}): ${errText}`);
-    }
+      const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'xi-api-key': ELEVENLABS_API_KEY,
+          'Content-Type': 'application/json',
+          'Accept': 'audio/mpeg'
+        },
+        body: JSON.stringify({
+          text: text,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: {
+            stability: 0.65,        // Smooth human mentor voice stability
+            similarity_boost: 0.85, // Ultra-clear Hindi/English clarity
+            style: 0.0,
+            use_speaker_boost: true
+          }
+        })
+      });
 
-    const arrayBuffer = await response.arrayBuffer();
-    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
-      throw new Error('Empty audio buffer received from ElevenLabs');
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`ElevenLabs API Error (${response.status}): ${errText}`);
+      }
+
+      arrayBuffer = await response.arrayBuffer();
+      if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+        throw new Error('Empty audio buffer received from ElevenLabs');
+      }
+
+      // Maintain up to 50 audio buffers in cache
+      if (this.audioCache.size >= 50) {
+        const firstKey = this.audioCache.keys().next().value;
+        this.audioCache.delete(firstKey);
+      }
+      this.audioCache.set(cacheKey, arrayBuffer.slice(0));
     }
 
     return new Promise((resolve, reject) => {
@@ -177,7 +217,6 @@ class AIAudioService {
         (decodedBuffer) => {
           try {
             // Create single Web Audio BufferSource Node connected directly to masterGain
-            // This outputs to speakers AND recorder stream without any double sound
             const source = this.audioCtx.createBufferSource();
             source.buffer = decodedBuffer;
             source.connect(this.masterGain);

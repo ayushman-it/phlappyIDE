@@ -539,31 +539,85 @@ class TeachingEngine {
         }
 
         await this.typeCodeIntoFile(targetFile, step.code || '');
+
+        // AUTO-DISPLAY OUTPUT RIGHT AFTER EXAMPLE CODE WRITING
+        await this.delay(400);
+        const currentEnv = store.environment;
+        const codeText = step.code || '';
+        if (currentEnv === 'PYTHON_BASIC' || currentEnv === 'C_BASIC' || currentEnv === 'CPP_BASIC') {
+          store.setActiveRightTab('terminal');
+          store.clearTerminalLogs();
+          if (currentEnv === 'C_BASIC') {
+            store.addTerminalLog(`$ gcc main.c -o main && ./main`);
+            store.addTerminalLog(`[GCC 13.2 Output]:`);
+            const cOuts = evaluateCOutput(store.files['main.c'] || codeText);
+            for (const outLine of cOuts) {
+              store.addTerminalLog(`> ${outLine}`);
+              await this.delay(200);
+            }
+          } else if (currentEnv === 'CPP_BASIC') {
+            store.addTerminalLog(`$ g++ main.cpp -o main && ./main`);
+            store.addTerminalLog(`[G++ 13.2 Output]:`);
+            const cppOuts = evaluateCppOutput(store.files['main.cpp'] || codeText);
+            for (const outLine of cppOuts) {
+              store.addTerminalLog(`> ${outLine}`);
+              await this.delay(200);
+            }
+          } else {
+            store.addTerminalLog(`$ python ${targetFile}`);
+            store.addTerminalLog(`[Python 3.11 Output]:`);
+            const pyOuts = evaluatePythonOutput(store.files['main.py'] || codeText);
+            for (const outLine of pyOuts) {
+              store.addTerminalLog(`> ${outLine}`);
+              await this.delay(200);
+            }
+          }
+        } else {
+          if (codeText.includes('console.log') || codeText.includes('console.warn') || codeText.includes('console.error')) {
+            store.setActiveRightTab('console');
+          } else {
+            store.setActiveRightTab('preview');
+          }
+        }
+        // Observation pause after showing output
+        await this.delay(1800);
         break;
 
       case 'show_preview':
         store.setCursorPosition({ x: 800, y: 165 });
-        await this.delay(600);
+        await this.delay(500);
         store.triggerCursorClick();
         store.setActiveRightTab('preview');
-        await this.delay(500);
+        if (step.text) {
+          store.setFlappySpeech(step.text, 'speaking');
+          await this.speakSpeech(step.text);
+        }
+        await this.delay(1800);
         break;
 
       case 'show_console':
         store.setCursorPosition({ x: 920, y: 165 });
-        await this.delay(600);
+        await this.delay(500);
         store.triggerCursorClick();
         store.clearConsoleLogs();
         store.setActiveRightTab('console');
-        await this.delay(500);
+        if (step.text) {
+          store.setFlappySpeech(step.text, 'speaking');
+          await this.speakSpeech(step.text);
+        }
+        await this.delay(1800);
         break;
 
       case 'show_terminal':
         store.setCursorPosition({ x: 1040, y: 165 });
-        await this.delay(600);
+        await this.delay(500);
         store.triggerCursorClick();
         store.setActiveRightTab('terminal');
-        await this.delay(500);
+        if (step.text) {
+          store.setFlappySpeech(step.text, 'speaking');
+          await this.speakSpeech(step.text);
+        }
+        await this.delay(1800);
         break;
 
       case 'click_element':
@@ -579,7 +633,7 @@ class TeachingEngine {
             '*'
           );
         }
-        await this.delay(1000);
+        await this.delay(1500);
         break;
 
       case 'run_code':
@@ -589,8 +643,8 @@ class TeachingEngine {
         store.setActiveRightTab('terminal');
         store.clearTerminalLogs();
 
-        const currentEnv = store.environment;
-        if (currentEnv === 'C_BASIC') {
+        const runEnv = store.environment;
+        if (runEnv === 'C_BASIC') {
           store.addTerminalLog(`$ gcc main.c -o main && ./main`);
           store.addTerminalLog(`[GCC 13.2 C Execution Output]:`);
           await this.delay(400);
@@ -601,7 +655,7 @@ class TeachingEngine {
             store.addTerminalLog(`> ${outLine}`);
             await this.delay(300);
           }
-        } else if (currentEnv === 'CPP_BASIC') {
+        } else if (runEnv === 'CPP_BASIC') {
           store.addTerminalLog(`$ g++ main.cpp -o main && ./main`);
           store.addTerminalLog(`[G++ 13.2 C++ Execution Output]:`);
           await this.delay(400);
@@ -625,7 +679,13 @@ class TeachingEngine {
             await this.delay(300);
           }
         }
-        await this.delay(1000);
+
+        if (step.text) {
+          store.setFlappySpeech(step.text, 'speaking');
+          await this.speakSpeech(step.text);
+        }
+
+        await this.delay(2000);
         break;
 
       case 'wait':
