@@ -3,7 +3,7 @@ import { useStudioStore } from '../../store/studioStore';
 import { engineInstance } from '../../teaching-engine/Engine';
 import { recorderInstance } from '../../services/recorderService';
 import { aiAudioService } from '../../services/aiAudioService';
-import { Play, Pause, RotateCcw, Video, Layers } from 'lucide-react';
+import { Play, Pause, RotateCcw, Video, Layers, FileCode } from 'lucide-react';
 
 export const StudioHeader = () => {
   const {
@@ -135,6 +135,15 @@ export const StudioHeader = () => {
         <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-slate-100 border border-slate-200/80 text-slate-600">
           {environment}
         </span>
+
+        <button
+          onClick={() => useStudioStore.getState().setIsGenerateModalOpen(true)}
+          className="flex items-center space-x-1.5 px-3 py-1 rounded-md text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
+          title="Import or Edit Custom 3-Min Script JSON"
+        >
+          <FileCode className="w-3.5 h-3.5 text-rose-600" />
+          <span>Custom Script</span>
+        </button>
 
         <button
           onClick={handleToggleRecording}
