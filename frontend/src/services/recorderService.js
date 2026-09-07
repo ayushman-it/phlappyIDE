@@ -24,7 +24,7 @@ class RecorderService {
         video: {
           displaySurface: 'browser',
           cursor: 'always',
-          frameRate: { ideal: 30, max: 60 }
+          frameRate: { ideal: 30, max: 30 }
         },
         audio: true
       });
@@ -66,7 +66,11 @@ class RecorderService {
         mimeType = 'video/mp4';
       }
 
-      this.mediaRecorder = new MediaRecorder(this.combinedStream, { mimeType });
+      this.mediaRecorder = new MediaRecorder(this.combinedStream, {
+        mimeType,
+        videoBitsPerSecond: 2500000, // 2.5 Mbps fixed bitrate for smooth 1.0x real-time playback
+        audioBitsPerSecond: 128000
+      });
 
       this.mediaRecorder.ondataavailable = (event) => {
         if (event.data && event.data.size > 0) {
@@ -112,7 +116,7 @@ class RecorderService {
         };
       }
 
-      this.mediaRecorder.start(1000); // Collect 1s data slices
+      this.mediaRecorder.start(250); // Collect 250ms data slices for accurate 1.0x WebM timestamp sync
       this.isRecording = true;
 
       if (onTick) {

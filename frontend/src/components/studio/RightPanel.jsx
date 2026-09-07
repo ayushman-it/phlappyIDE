@@ -78,7 +78,101 @@ export const RightPanel = () => {
       <html>
         <head>
           <meta charset="utf-8" />
-          <style>body { background: ${bodyBg}; color: ${titleColor}; margin: 0; padding: 0; } ${css}</style>
+          <style>
+            body { background: ${bodyBg}; color: ${titleColor}; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+            ${css}
+
+            /* TCM Phlappy Visual Alert / Confirm / Prompt Dialog Overlay */
+            .phlappy-dialog-overlay {
+              position: fixed;
+              top: 0; left: 0; right: 0; bottom: 0;
+              background: rgba(15, 23, 42, 0.75);
+              backdrop-filter: blur(4px);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              z-index: 999999;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+              animation: phlappyPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            @keyframes phlappyPopIn {
+              from { opacity: 0; transform: scale(0.92); }
+              to { opacity: 1; transform: scale(1); }
+            }
+            .phlappy-dialog-box {
+              background: #ffffff;
+              border: 1px solid #cbd5e1;
+              border-radius: 18px;
+              padding: 22px 24px;
+              max-width: 360px;
+              width: 90%;
+              box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+              text-align: center;
+              box-sizing: border-box;
+            }
+            .phlappy-dialog-header {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 8px;
+              font-size: 14px;
+              font-weight: 800;
+              color: #0f172a;
+              margin-bottom: 10px;
+            }
+            .phlappy-dialog-msg {
+              font-size: 13px;
+              color: #334155;
+              margin-bottom: 16px;
+              line-height: 1.5;
+              word-break: break-word;
+            }
+            .phlappy-dialog-input {
+              width: 100%;
+              padding: 10px 14px;
+              border: 1.5px solid #cbd5e1;
+              border-radius: 10px;
+              font-size: 13px;
+              margin-bottom: 16px;
+              outline: none;
+              box-sizing: border-box;
+              transition: all 0.15s ease;
+            }
+            .phlappy-dialog-input:focus {
+              border-color: #e11d48;
+              box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15);
+            }
+            .phlappy-dialog-actions {
+              display: flex;
+              gap: 10px;
+              justify-content: center;
+            }
+            .phlappy-dialog-btn {
+              padding: 9px 20px;
+              border-radius: 10px;
+              font-size: 12px;
+              font-weight: 800;
+              cursor: pointer;
+              border: none;
+              transition: all 0.15s ease;
+            }
+            .phlappy-dialog-btn-primary {
+              background: #e11d48;
+              color: #ffffff;
+              box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3);
+            }
+            .phlappy-dialog-btn-primary:hover {
+              background: #be123c;
+            }
+            .phlappy-dialog-btn-secondary {
+              background: #f1f5f9;
+              color: #475569;
+              border: 1px solid #cbd5e1;
+            }
+            .phlappy-dialog-btn-secondary:hover {
+              background: #e2e8f0;
+            }
+          </style>
           <script>
             (function() {
               function sendToParent(logType, args) {
@@ -101,12 +195,80 @@ export const RightPanel = () => {
               console.warn = function() { sendToParent('warn', arguments); origWarn.apply(console, arguments); };
               console.error = function() { sendToParent('error', arguments); origError.apply(console, arguments); };
 
+              function showVisualDialog(type, msg, defaultText, callback) {
+                var existing = document.getElementById('phlappy-dialog-overlay');
+                if (existing) existing.remove();
+
+                var overlay = document.createElement('div');
+                overlay.id = 'phlappy-dialog-overlay';
+                overlay.className = 'phlappy-dialog-overlay';
+
+                var iconSvg = type === 'alert'
+                  ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+                  : type === 'confirm'
+                  ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+                  : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+
+                var title = type === 'alert' ? 'Browser Alert Popup' : type === 'confirm' ? 'Browser Confirmation Popup' : 'Browser Input Prompt Popup';
+
+                var inputHtml = type === 'prompt'
+                  ? '<input type="text" id="phlappy-dialog-input" class="phlappy-dialog-input" value="' + (defaultText || '') + '" placeholder="Type value..." />'
+                  : '';
+
+                var buttonsHtml = type === 'alert'
+                  ? '<button id="phlappy-dialog-ok" class="phlappy-dialog-btn phlappy-dialog-btn-primary">OK</button>'
+                  : '<button id="phlappy-dialog-cancel" class="phlappy-dialog-btn phlappy-dialog-btn-secondary">Cancel</button><button id="phlappy-dialog-ok" class="phlappy-dialog-btn phlappy-dialog-btn-primary">OK</button>';
+
+                overlay.innerHTML = '<div class="phlappy-dialog-box">' +
+                  '<div class="phlappy-dialog-header">' + iconSvg + ' <span>' + title + '</span></div>' +
+                  '<div class="phlappy-dialog-msg">' + (msg || '') + '</div>' +
+                  inputHtml +
+                  '<div class="phlappy-dialog-actions">' + buttonsHtml + '</div>' +
+                  '</div>';
+
+                document.body.appendChild(overlay);
+
+                var okBtn = overlay.querySelector('#phlappy-dialog-ok');
+                var cancelBtn = overlay.querySelector('#phlappy-dialog-cancel');
+                var inputEl = overlay.querySelector('#phlappy-dialog-input');
+
+                if (inputEl) {
+                  setTimeout(function() { inputEl.focus(); inputEl.select(); }, 50);
+                }
+
+                if (okBtn) {
+                  okBtn.onclick = function() {
+                    var resValue = type === 'prompt' ? (inputEl ? inputEl.value : '') : true;
+                    sendToParent(type === 'alert' ? 'warn' : 'log', ['[' + title + ' OK]:', resValue]);
+                    overlay.remove();
+                    if (callback) callback(resValue);
+                  };
+                }
+                if (cancelBtn) {
+                  cancelBtn.onclick = function() {
+                    var resValue = type === 'prompt' ? null : false;
+                    sendToParent('warn', ['[' + title + ' Cancelled]:', resValue]);
+                    overlay.remove();
+                    if (callback) callback(resValue);
+                  };
+                }
+              }
+
               window.alert = function(msg) {
-                window.parent.postMessage({
-                  source: 'FLAPPY_SANDBOX',
-                  type: 'SANDBOX_ALERT',
-                  message: msg
-                }, '*');
+                sendToParent('warn', ['[alert()]', msg]);
+                showVisualDialog('alert', String(msg));
+              };
+
+              window.confirm = function(msg) {
+                sendToParent('warn', ['[confirm()]', msg]);
+                showVisualDialog('confirm', String(msg));
+                return true;
+              };
+
+              window.prompt = function(msg, defaultText) {
+                sendToParent('warn', ['[prompt()]', msg]);
+                showVisualDialog('prompt', String(msg), defaultText);
+                return defaultText || 'Phlappy Student';
               };
 
               window.addEventListener('message', function(event) {
@@ -122,7 +284,13 @@ export const RightPanel = () => {
         </head>
         <body>
           ${html}
-          <script>${js}</script>
+          <script>
+            try {
+              ${js}
+            } catch (sandboxErr) {
+              console.error('[Script Runtime Error]:', sandboxErr.message);
+            }
+          </script>
         </body>
       </html>
     `;
@@ -189,7 +357,7 @@ export const RightPanel = () => {
                 title="Sandboxed Preview"
                 srcDoc={generateIframeContent()}
                 className={`w-full h-full ${theme.editorBg} rounded-lg border border-slate-200/40 shadow-xs`}
-                sandbox="allow-scripts allow-same-origin"
+                sandbox="allow-scripts allow-same-origin allow-modals"
               />
             </div>
           </div>
