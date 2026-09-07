@@ -3,7 +3,7 @@ import { useStudioStore } from '../../store/studioStore';
 import { engineInstance } from '../../teaching-engine/Engine';
 import { recorderInstance } from '../../services/recorderService';
 import { aiAudioService } from '../../services/aiAudioService';
-import { Play, Pause, RotateCcw, Video, Layers, FileCode, Sparkles, Cpu } from 'lucide-react';
+import { Play, Pause, RotateCcw, Video, Layers, FileCode, Cpu } from 'lucide-react';
 
 export const StudioHeader = () => {
   const {
@@ -55,16 +55,16 @@ export const StudioHeader = () => {
   };
 
   return (
-    <header className="h-14 bg-slate-950 border-b border-slate-800 px-5 flex items-center justify-between select-none text-slate-100 shadow-md relative z-20">
+    <header className="h-14 bg-white border-b border-slate-200/90 px-6 flex items-center justify-between select-none text-slate-800 shadow-2xs relative z-20">
       {/* Left Brand Lockup & Topic Breadcrumb */}
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2.5">
           {/* Logo Badge Container */}
-          <div className="flex items-center justify-center h-8 w-8 rounded-xl bg-slate-900 border border-slate-800 p-1 shadow-inner">
+          <div className="flex items-center justify-center h-8 w-8 rounded-xl bg-slate-50 border border-slate-200 p-1 shadow-2xs">
             <img
               src="https://thecodemunk.in/assets/logo.png"
               alt="TheCodeMunk Logo"
-              className="h-full w-full object-contain rounded-lg transition-transform hover:scale-105"
+              className="h-full w-full object-contain transition-transform hover:scale-105"
               onError={(e) => {
                 e.target.style.display = 'none';
               }}
@@ -73,25 +73,25 @@ export const StudioHeader = () => {
 
           {/* Official TCM One Studio Brand Lockup */}
           <div className="flex flex-col">
-            <h1 className="font-black text-white text-base tracking-tight leading-none flex items-center gap-1">
-              TCM<span className="text-rose-500">One</span>
-              <span className="text-[10px] font-mono font-bold tracking-widest text-slate-400 bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded ml-1 uppercase">
+            <h1 className="font-black text-slate-900 text-base tracking-tight leading-none flex items-center gap-1">
+              TCM<span className="text-rose-600">One</span>
+              <span className="text-[10px] font-mono font-bold tracking-wider text-slate-600 bg-slate-100 border border-slate-200/80 px-1.5 py-0.5 rounded ml-1 uppercase">
                 Studio
               </span>
             </h1>
           </div>
         </div>
 
-        <div className="h-4 w-px bg-slate-800" />
+        <div className="h-4 w-px bg-slate-200" />
 
         {/* Active Lesson Topic Breadcrumb Pill */}
-        <div className="flex items-center space-x-2 text-xs font-semibold text-slate-300 bg-slate-900 px-3 py-1 rounded-xl border border-slate-800/90 shadow-2xs">
-          <Layers className="w-3.5 h-3.5 text-rose-500" />
-          <span className="truncate max-w-[260px] font-bold text-slate-100">{lessonTitle}</span>
+        <div className="flex items-center space-x-2 text-xs font-semibold text-slate-700 bg-slate-50 px-3 py-1 rounded-xl border border-slate-200/80 shadow-2xs">
+          <Layers className="w-3.5 h-3.5 text-rose-600" />
+          <span className="truncate max-w-[260px] font-bold text-slate-800">{lessonTitle}</span>
           {isPlaying && (
             <span className="flex h-2 w-2 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600" />
             </span>
           )}
         </div>
@@ -100,14 +100,14 @@ export const StudioHeader = () => {
       {/* Center Sequencer Controls & Progress Bar */}
       <div className="flex items-center space-x-3">
         {/* Playback Button Group */}
-        <div className="flex items-center bg-slate-900 p-1 rounded-xl space-x-1 border border-slate-800 shadow-inner">
+        <div className="flex items-center bg-slate-100/80 p-1 rounded-xl space-x-1 border border-slate-200">
           <button
             onClick={handlePlayPause}
             disabled={!activeLessonData}
-            className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-lg text-xs font-black transition-all disabled:opacity-40 cursor-pointer shadow-sm ${
+            className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-lg text-xs font-black transition-all disabled:opacity-40 cursor-pointer shadow-xs ${
               isPlaying && !isPaused
-                ? 'bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-amber-500/20'
-                : 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20'
+                ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                : 'bg-rose-600 hover:bg-rose-700 text-white'
             }`}
           >
             {isPlaying && !isPaused ? (
@@ -127,7 +127,7 @@ export const StudioHeader = () => {
             onClick={handleReset}
             disabled={!activeLessonData}
             title="Reset Lesson Session"
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-40 cursor-pointer"
+            className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded-lg transition-colors disabled:opacity-40 cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
@@ -135,12 +135,12 @@ export const StudioHeader = () => {
 
         {/* Step Progress Bar Pill */}
         {totalSteps > 0 && (
-          <div className="flex flex-col space-y-1 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800 text-[11px] min-w-[120px]">
-            <div className="flex items-center justify-between text-slate-400 font-mono text-[10px]">
-              <span>Step <strong className="text-white">{Math.min(currentStepIndex + 1, totalSteps)}</strong>/{totalSteps}</span>
-              <span className="text-rose-400 font-bold">{progressPercent}%</span>
+          <div className="flex flex-col space-y-1 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] min-w-[120px]">
+            <div className="flex items-center justify-between text-slate-500 font-mono text-[10px]">
+              <span>Step <strong className="text-slate-900">{Math.min(currentStepIndex + 1, totalSteps)}</strong>/{totalSteps}</span>
+              <span className="text-rose-600 font-bold">{progressPercent}%</span>
             </div>
-            <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
               <div
                 className="bg-gradient-to-r from-rose-600 to-amber-500 h-full transition-all duration-300 rounded-full"
                 style={{ width: `${progressPercent}%` }}
@@ -153,18 +153,18 @@ export const StudioHeader = () => {
       {/* Right Action Controls */}
       <div className="flex items-center space-x-2.5">
         {/* Environment Tech Pill */}
-        <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 flex items-center gap-1">
-          <Cpu className="w-3 h-3 text-rose-500" />
+        <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200/80 text-slate-600 flex items-center gap-1">
+          <Cpu className="w-3 h-3 text-rose-600" />
           {environment}
         </span>
 
         {/* Custom Script Modal Trigger */}
         <button
           onClick={() => useStudioStore.getState().setIsGenerateModalOpen(true)}
-          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 transition-all cursor-pointer shadow-xs hover:border-slate-700"
+          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs"
           title="Import or Edit Custom 3-Min Script JSON"
         >
-          <FileCode className="w-3.5 h-3.5 text-rose-400" />
+          <FileCode className="w-3.5 h-3.5 text-rose-600" />
           <span>Custom Script</span>
         </button>
 
@@ -173,11 +173,11 @@ export const StudioHeader = () => {
           onClick={handleToggleRecording}
           className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
             isRecording
-              ? 'bg-red-600 text-white border-red-500 animate-pulse shadow-lg shadow-red-600/30'
-              : 'bg-rose-950/40 hover:bg-rose-900/60 text-rose-200 border-rose-800/80 shadow-xs'
+              ? 'bg-red-600 text-white border-red-700 animate-pulse shadow-xs'
+              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 shadow-2xs'
           }`}
         >
-          <Video className="w-3.5 h-3.5" />
+          <Video className="w-3.5 h-3.5 text-rose-600" />
           <span>
             {isRecording
               ? `🔴 REC (${Math.floor(recordDuration / 60)}:${String(recordDuration % 60).padStart(2, '0')})`

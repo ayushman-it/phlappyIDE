@@ -54,10 +54,10 @@ export const CenterPanel = () => {
   const currentLineCount = (activeFile && files[activeFile]) ? files[activeFile].split('\n').length : 1;
 
   return (
-    <main className="flex-1 flex flex-col h-full bg-slate-900 border-r border-slate-800 overflow-hidden select-none">
-      {/* Sleek IDE Monaco File Tabs Header */}
-      <div className="flex items-center justify-between bg-slate-950 border-b border-slate-800 px-2 h-9 flex-shrink-0">
-        <div className="flex space-x-1.5 overflow-x-auto h-full items-end flex-1 max-w-xl">
+    <main className="flex-1 flex flex-col h-full bg-white border-r border-slate-200 overflow-hidden select-none">
+      {/* Light Clean IDE Monaco File Tabs Header */}
+      <div className="flex items-center justify-between bg-slate-100/90 border-b border-slate-200 px-2 h-9 flex-shrink-0">
+        <div className="flex space-x-1 overflow-x-auto h-full items-end flex-1 max-w-xl">
           {Object.keys(files).map((file) => {
             if (environment === 'PYTHON_BASIC' && !file.endsWith('.py')) return null;
             if (environment === 'C_BASIC' && !file.endsWith('.c')) return null;
@@ -69,39 +69,39 @@ export const CenterPanel = () => {
               <button
                 key={file}
                 onClick={() => setActiveFile(file)}
-                className={`flex items-center space-x-2 px-3 py-1.5 rounded-t-lg text-xs font-bold transition-all cursor-pointer h-8 border-t border-x ${
+                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-t-lg text-xs font-bold transition-all cursor-pointer h-8 border-t border-x ${
                   isActive
-                    ? 'bg-slate-900 border-slate-700 text-rose-400 shadow-sm'
-                    : 'bg-slate-950/70 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                    ? 'bg-white border-slate-200/90 text-rose-600 shadow-2xs font-extrabold'
+                    : 'bg-slate-100/60 border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-200/60'
                 }`}
               >
-                <FileCode className={`w-3.5 h-3.5 ${isActive ? 'text-rose-400' : 'text-slate-500'}`} />
+                <FileCode className={`w-3.5 h-3.5 ${isActive ? 'text-rose-600' : 'text-slate-400'}`} />
                 <span className="truncate max-w-[130px] font-mono tracking-tight">{file}</span>
-                {isActive && <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />}
+                {isActive && <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />}
               </button>
             );
           })}
         </div>
 
-        {/* Font Size & Mode Controls */}
+        {/* Font Size & Writing Controls */}
         <div className="flex items-center space-x-2">
           {/* Font Size Controls */}
-          <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5 text-slate-300">
+          <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs text-slate-700">
             <button
               onClick={() => setEditorFontSize(Math.max(12, editorFontSize - 1))}
-              className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
               title="Decrease Code Font Size"
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
 
-            <span className="px-2 font-mono text-[11px] font-bold text-rose-400">
+            <span className="px-2 font-mono text-[11px] font-extrabold text-rose-600">
               {editorFontSize}px
             </span>
 
             <button
               onClick={() => setEditorFontSize(Math.min(24, editorFontSize + 1))}
-              className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
               title="Increase Code Font Size"
             >
               <ZoomIn className="w-3.5 h-3.5" />
@@ -109,40 +109,40 @@ export const CenterPanel = () => {
           </div>
 
           {/* Writing Indicator */}
-          <div className="px-2 text-[11px] font-bold text-slate-400 flex items-center">
+          <div className="px-2 text-[11px] font-bold text-slate-600 flex items-center">
             {isPlaying ? (
-              <span className="flex items-center text-rose-400 animate-pulse font-extrabold bg-rose-950/50 px-2 py-0.5 rounded border border-rose-800/60">
-                <Sparkles className="w-3 h-3 mr-1 text-amber-400" /> Phlappy Writing...
+              <span className="flex items-center text-rose-600 animate-pulse font-extrabold bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
+                <Sparkles className="w-3 h-3 mr-1 text-amber-500 fill-amber-400" /> Phlappy Writing...
               </span>
             ) : (
-              <span className="text-slate-500 font-mono text-[10px]">TCM Studio IDE</span>
+              <span className="text-slate-400 font-mono text-[10px]">TCM Studio IDE</span>
             )}
           </div>
         </div>
       </div>
 
-      {/* Monaco Code Editor Container */}
+      {/* Monaco Code Editor Container - Clean Light Theme */}
       {!activeFile || Object.keys(files).length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-950 text-center select-none">
-          <div className="w-14 h-14 rounded-2xl bg-rose-950/60 border border-rose-800/60 shadow-xl flex items-center justify-center mb-4">
-            <Sparkles className="w-7 h-7 text-rose-500 animate-pulse" />
+        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-50/50 text-center select-none">
+          <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-100 shadow-xs flex items-center justify-center mb-4">
+            <Sparkles className="w-7 h-7 text-rose-600 animate-pulse" />
           </div>
-          <h3 className="text-base font-black text-white mb-1.5 tracking-tight">
-            Welcome to TCM<span className="text-rose-500">One</span> Phlappy AI Code Studio
+          <h3 className="text-base font-black text-slate-900 mb-1.5 tracking-tight">
+            Welcome to TCM<span className="text-rose-600">One</span> Phlappy AI Code Studio
           </h3>
-          <p className="text-xs text-slate-400 max-w-sm mb-4 leading-relaxed font-medium">
+          <p className="text-xs text-slate-500 max-w-sm mb-4 leading-relaxed font-medium">
             Topic bar me koi bhi topic type kijiye aur Phlappy HD clean code aur definition comments ke saath sikhayega!
           </p>
         </div>
       ) : (
-        <div className="flex-1 relative bg-slate-900">
+        <div className="flex-1 relative bg-white">
           <Editor
             height="100%"
             language={getLanguage(activeFile)}
             value={files[activeFile] || ''}
             onChange={handleEditorChange}
             onMount={handleEditorMount}
-            theme="vs-dark"
+            theme="vs-light"
             options={{
               fontSize: editorFontSize,
               lineHeight: Math.round(editorFontSize * 1.6),
@@ -164,23 +164,23 @@ export const CenterPanel = () => {
         </div>
       )}
 
-      {/* Bottom Professional IDE Status Bar */}
-      <div className="h-6 bg-slate-950 border-t border-slate-800 px-3 flex items-center justify-between text-[10px] font-mono text-slate-400 flex-shrink-0">
+      {/* Bottom Light IDE Status Bar */}
+      <div className="h-6 bg-slate-100/90 border-t border-slate-200 px-3 flex items-center justify-between text-[10px] font-mono text-slate-600 flex-shrink-0">
         <div className="flex items-center space-x-4">
-          <span className="flex items-center text-slate-300 font-semibold">
-            <Terminal className="w-3 h-3 mr-1 text-rose-500" />
+          <span className="flex items-center text-slate-700 font-bold">
+            <Terminal className="w-3 h-3 mr-1 text-rose-600" />
             {getLanguage(activeFile).toUpperCase()}
           </span>
-          <span>Lines: <strong className="text-slate-200">{currentLineCount}</strong></span>
+          <span>Lines: <strong className="text-slate-900">{currentLineCount}</strong></span>
           <span>Spaces: 2</span>
           <span>UTF-8</span>
         </div>
 
-        <div className="flex items-center space-x-3 text-slate-400">
-          <span className="flex items-center text-emerald-400 font-bold">
+        <div className="flex items-center space-x-3 text-slate-500">
+          <span className="flex items-center text-emerald-600 font-bold">
             <CheckCircle2 className="w-3 h-3 mr-1" /> Ready
           </span>
-          <span>Font: <strong className="text-rose-400">{editorFontSize}px</strong></span>
+          <span>Font: <strong className="text-rose-600">{editorFontSize}px</strong></span>
         </div>
       </div>
     </main>
