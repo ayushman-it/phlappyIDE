@@ -127,6 +127,10 @@ export const useStudioStore = create((set, get) => ({
   appTheme: 'vscode-light',
   setAppTheme: (theme) => set({ appTheme: theme }),
 
+  // Welcome / Onboarding Help Modal State
+  isWelcomeModalOpen: false,
+  setIsWelcomeModalOpen: (open) => set({ isWelcomeModalOpen: open }),
+
   // Line Highlighting & Font Size in Monaco
   editorFontSize: 16,
   setEditorFontSize: (size) => set({ editorFontSize: size }),

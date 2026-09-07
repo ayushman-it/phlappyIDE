@@ -8,6 +8,7 @@ import { StudioFooter } from './components/studio/StudioFooter';
 import { FlappyWidget } from './components/studio/FlappyWidget';
 import { VirtualCursor } from './components/studio/VirtualCursor';
 import { GenerateModal } from './components/studio/GenerateModal';
+import { WelcomeModal } from './components/studio/WelcomeModal';
 
 export default function App() {
   return (
@@ -36,6 +37,9 @@ export default function App() {
 
       {/* AI Lesson Generator Modal */}
       <GenerateModal />
+
+      {/* Phlappy AI Studio Welcome & Help Modal */}
+      <WelcomeModal />
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { engineInstance } from '../../teaching-engine/Engine';
 import { recorderInstance } from '../../services/recorderService';
 import { aiAudioService } from '../../services/aiAudioService';
 import { getThemeClasses, THEME_OPTIONS } from '../../utils/themeStyles';
-import { Play, Pause, RotateCcw, Video, Layers, FileCode, Palette, ChevronDown, Sun, Coffee, Moon, Sparkles, CircleDot } from 'lucide-react';
+import { Play, Pause, RotateCcw, Video, Layers, FileCode, Palette, ChevronDown, Sun, Coffee, Moon, Sparkles, CircleDot, HelpCircle } from 'lucide-react';
 
 export const StudioHeader = () => {
   const {
@@ -18,7 +18,8 @@ export const StudioHeader = () => {
     setRecordDuration,
     activeLessonData,
     appTheme,
-    setAppTheme
+    setAppTheme,
+    setIsWelcomeModalOpen
   } = useStudioStore();
 
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
@@ -208,6 +209,16 @@ export const StudioHeader = () => {
             </div>
           )}
         </div>
+
+        {/* Studio Help / Intro Modal Trigger */}
+        <button
+          onClick={() => setIsWelcomeModalOpen(true)}
+          className={`p-1 px-2 rounded-lg text-[11px] font-bold border transition-all cursor-pointer flex items-center space-x-1 ${theme.pillBg}`}
+          title="About Phlappy AI Studio & Quick Guide (?)"
+        >
+          <HelpCircle className="w-3.5 h-3.5 text-rose-600" />
+          <span className="hidden md:inline">Help</span>
+        </button>
 
         {/* Custom Script Button */}
         <button

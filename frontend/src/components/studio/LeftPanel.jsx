@@ -21,7 +21,8 @@ import {
   Sliders,
   Settings,
   Layers,
-  FileText as FileTextIcon
+  FileText as FileTextIcon,
+  HelpCircle
 } from 'lucide-react';
 
 export const LeftPanel = () => {
@@ -151,6 +152,14 @@ export const LeftPanel = () => {
             title="Custom 3-Min Script Importer"
           >
             <FileCode className="w-4 h-4 text-rose-600" />
+          </button>
+
+          <button
+            onClick={() => useStudioStore.getState().setIsWelcomeModalOpen(true)}
+            className="p-2 rounded-xl transition-all cursor-pointer hover:bg-slate-200/50 text-slate-500"
+            title="Phlappy AI Studio Welcome Guide (?)"
+          >
+            <HelpCircle className="w-4 h-4 text-rose-600" />
           </button>
         </div>
 
