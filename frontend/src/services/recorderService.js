@@ -1,4 +1,4 @@
-// Screen & Studio Recorder Service with Persistent Session Control & Robust Error Recovery
+// Screen & Studio Recorder Service with Clean Audio Destination & Zero-Echo Guard
 import { aiAudioService } from './aiAudioService';
 import { useStudioStore } from '../store/studioStore';
 
@@ -19,7 +19,7 @@ class RecorderService {
       this.recordedChunks = [];
       this.secondsRecorded = 0;
 
-      // 1. Capture Display Screen / Window / Tab (Video + Tab System Audio)
+      // 1. Capture Display Screen / Window / Tab (Video stream)
       this.displayStream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           displaySurface: 'browser',
@@ -29,22 +29,24 @@ class RecorderService {
         audio: true
       });
 
-      // 2. Collect Audio Tracks: Tab Audio + Dedicated Persistent ElevenLabs AI Audio Destination Track
+      // 2. Select Audio Track: Use ONLY AIAudioService track to eliminate double sound in recording!
       const audioTracks = [];
-
-      // Add Display Tab Audio if selected by user
-      const displayAudioTracks = this.displayStream.getAudioTracks();
-      if (displayAudioTracks.length > 0) {
-        audioTracks.push(...displayAudioTracks);
-      }
-
-      // Add Persistent AI Audio Track from AIAudioService
       const aiTrack = aiAudioService.getAudioTrack();
+
       if (aiTrack) {
+        // Dedicated pure AI voice track from Web Audio Destination Node
         audioTracks.push(aiTrack);
+      } else {
+        // Fallback to display audio if AI track is unavailable
+        const displayAudioTracks = this.displayStream.getAudioTracks();
+        if (displayAudioTracks.length > 0) {
+          audioTracks.push(...displayAudioTracks);
+        }
       }
 
-      // 3. Create combined stream for continuous recording
+      // NOTE: Zero microphone (getUserMedia) is used to prevent ambient/room noise completely.
+
+      // 3. Combine video + single pure audio track into MediaStream
       const tracksToRecord = [
         ...this.displayStream.getVideoTracks(),
         ...audioTracks
@@ -74,7 +76,6 @@ class RecorderService {
 
       this.mediaRecorder.onerror = (errEvent) => {
         console.error('MediaRecorder error encountered:', errEvent);
-        // Attempt recovery if mediaRecorder paused or errored mid-session
         if (this.isRecording && this.mediaRecorder && this.mediaRecorder.state === 'paused') {
           try {
             this.mediaRecorder.resume();
@@ -85,7 +86,6 @@ class RecorderService {
       };
 
       this.mediaRecorder.onpause = () => {
-        // Prevent accidental browser pausing when switching tabs
         if (this.isRecording && this.mediaRecorder && this.mediaRecorder.state === 'paused') {
           try {
             this.mediaRecorder.resume();
@@ -101,7 +101,7 @@ class RecorderService {
         useStudioStore.getState().setIsRecording(false);
       };
 
-      // Guard video track: Only stop if user explicitly stopped browser sharing bar
+      // Guard video track: Stop only if user manually closes browser share bar
       const videoTrack = this.displayStream.getVideoTracks()[0];
       if (videoTrack) {
         videoTrack.onended = () => {
@@ -112,7 +112,7 @@ class RecorderService {
         };
       }
 
-      this.mediaRecorder.start(1000); // Collect 1s slices persistently
+      this.mediaRecorder.start(1000); // Collect 1s data slices
       this.isRecording = true;
 
       if (onTick) {

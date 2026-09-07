@@ -1,4 +1,4 @@
-// AI Speech Audio Service with ElevenLabs Voice Integration & Pure Web Audio Destination
+// AI Speech Audio Service with ElevenLabs Voice Integration & Zero-Echo Audio Destination
 
 const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || '';
 // High Quality Multilingual Voice IDs (George: JBFqnCBsd6RMkjVDRZzb, Jessica: cgSgspJ2msm6clMCkdW9)
@@ -22,6 +22,8 @@ class AIAudioService {
         this.destination = this.audioCtx.createMediaStreamDestination();
         this.masterGain = this.audioCtx.createGain();
         this.masterGain.gain.value = 1.0;
+        
+        // Route masterGain to stream destination (for recorder) AND speakers
         this.masterGain.connect(this.destination);
         this.masterGain.connect(this.audioCtx.destination);
       }
@@ -43,7 +45,8 @@ class AIAudioService {
   stopCurrentSpeech() {
     if (this.currentBufferSource) {
       try {
-        this.currentBufferSource.stop();
+        this.currentBufferSource.onended = null;
+        this.currentBufferSource.stop(0);
         this.currentBufferSource.disconnect();
       } catch (e) {
         // ignore
@@ -54,6 +57,8 @@ class AIAudioService {
       try {
         this.currentAudioElement.pause();
         this.currentAudioElement.currentTime = 0;
+        this.currentAudioElement.onended = null;
+        this.currentAudioElement.onerror = null;
       } catch (e) {
         // ignore
       }
@@ -68,9 +73,12 @@ class AIAudioService {
     if (!rawText || !rawText.trim()) return;
 
     this.init();
+    // Stop any ongoing speech immediately to eliminate overlapping/double sound
     this.stopCurrentSpeech();
 
+    // Clean text thoroughly for ultra-smooth natural human speech without reading symbols
     const cleanedText = rawText
+      .replace(/```[\s\S]*?```/g, '')
       .replace(/`{1,3}[\s\S]*?`{1,3}/g, '')
       .replace(/[\#\*\_\~\>\`\[\]\(\)\{\}\\\/]/g, ' ')
       .replace(/\s+/g, ' ')
@@ -78,8 +86,8 @@ class AIAudioService {
 
     if (!cleanedText) return;
 
-    // Split text into chunks suitable for speech synthesis
-    const chunks = cleanedText.match(/.{1,180}(?:\s+|$)/g) || [cleanedText];
+    // Split text into smooth chunks (max 200 chars for optimal pacing)
+    const chunks = cleanedText.match(/.{1,200}(?:\s+|$)/g) || [cleanedText];
 
     for (const chunk of chunks) {
       const textToSpeak = chunk.trim();
@@ -102,7 +110,7 @@ class AIAudioService {
         }
       };
 
-      // 1. Attempt ElevenLabs Voice TTS via Web Audio API
+      // 1. Attempt Smooth ElevenLabs Voice TTS via Web Audio API
       this.speakElevenLabs(text, ELEVENLABS_VOICE_ID)
         .then(() => safeResolve())
         .catch((err1) => {
@@ -124,9 +132,6 @@ class AIAudioService {
               });
             });
         });
-
-      // Safety timeout per speech chunk (12 seconds max)
-      setTimeout(safeResolve, 12000);
     });
   }
 
@@ -145,8 +150,8 @@ class AIAudioService {
         text: text,
         model_id: 'eleven_multilingual_v2',
         voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.75,
+          stability: 0.70,        // Smooth, stable mentor tone
+          similarity_boost: 0.80, // High clarity & crisp pronunciation
           style: 0.0,
           use_speaker_boost: true
         }
@@ -171,12 +176,17 @@ class AIAudioService {
         arrayBuffer,
         (decodedBuffer) => {
           try {
+            // Create single Web Audio BufferSource Node connected directly to masterGain
+            // This outputs to speakers AND recorder stream without any double sound
             const source = this.audioCtx.createBufferSource();
             source.buffer = decodedBuffer;
             source.connect(this.masterGain);
 
             this.currentBufferSource = source;
-            source.onended = () => resolve();
+            source.onended = () => {
+              this.currentBufferSource = null;
+              resolve();
+            };
             source.start(0);
           } catch (e) {
             reject(e);
@@ -194,16 +204,10 @@ class AIAudioService {
     audio.playbackRate = 0.95;
     this.currentAudioElement = audio;
 
-    if (this.audioCtx && this.masterGain) {
-      try {
-        const source = this.audioCtx.createMediaElementSource(audio);
-        source.connect(this.masterGain);
-      } catch (e) {
-        // ignore if already connected
-      }
-    }
-
-    audio.onended = safeResolve;
+    audio.onended = () => {
+      this.currentAudioElement = null;
+      safeResolve();
+    };
     audio.onerror = () => onFail();
 
     audio.play().catch(() => onFail());
