@@ -1,8 +1,8 @@
 // Groq LLM API Service for Deep Pedagogy: Intro -> Pre-Write Explanation -> Exact Line-by-Line Code & Comments
 
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const MODEL_NAME = 'groq/compound-mini';
+const MODEL_NAME = 'llama-3.3-70b-versatile';
+const FALLBACK_MODEL_NAME = 'llama-3.1-8b-instant';
 
 const SYSTEM_PROMPT = `
 You are Phlappy, a friendly and expert AI Master Instructor for TCM One Code Studio.
@@ -210,15 +210,16 @@ Requirements:
 6. EXACT LINE-BY-LINE BREAKDOWN: The "speak" step AFTER "write_code" MUST explain every line by stating the EXACT line number and exact code snippet (e.g. "Line 1 me 'var a = 10;' se...").
 7. PRE-PANEL ANNOUNCEMENT: Before opening console/terminal, include a "speak" step ("Aao ab Console/Terminal panel open karke live output inspect karte hain...").`;
 
-  try {
-    const response = await fetch(GROQ_API_URL, {
+  const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+  const fetchWithModel = async (selectedModel) => {
+    return await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${GROQ_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: MODEL_NAME,
+        model: selectedModel,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
@@ -228,6 +229,14 @@ Requirements:
         max_tokens: 3800
       })
     });
+  };
+
+  try {
+    let response = await fetchWithModel(MODEL_NAME);
+    if (!response.ok) {
+      console.warn(`Groq Primary Model (${MODEL_NAME}) failed, retrying with fallback model (${FALLBACK_MODEL_NAME})...`);
+      response = await fetchWithModel(FALLBACK_MODEL_NAME);
+    }
 
     if (!response.ok) {
       const errText = await response.text();
