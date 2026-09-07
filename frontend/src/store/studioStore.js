@@ -92,6 +92,8 @@ export const useStudioStore = create((set, get) => ({
   setIsGeneratingAI: (generating) => set({ isGeneratingAI: generating }),
   activeLessonData: null,
   setActiveLessonData: (lesson) => set({ activeLessonData: lesson }),
+  deepSearchLesson: null,
+  setDeepSearchLesson: (lesson) => set({ deepSearchLesson: lesson }),
 
   // Syllabus / Subtopic Roadmap State
   syllabus: [],

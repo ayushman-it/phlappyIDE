@@ -12,6 +12,7 @@ export const TopicBar = () => {
     isGeneratingAI,
     setIsGeneratingAI,
     setActiveLessonData,
+    setDeepSearchLesson,
     environment,
     setEnvironment,
     setFlappySpeech,
@@ -59,7 +60,7 @@ export const TopicBar = () => {
         setEnvironment(lessonData.environment);
       }
 
-      engineInstance.start(lessonData);
+      setDeepSearchLesson(lessonData);
     } catch (err) {
       console.error(err);
       setIsGeneratingAI(false);

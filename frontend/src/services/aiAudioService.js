@@ -13,6 +13,7 @@ class AIAudioService {
     this.currentBufferSource = null;
     this.currentAudioElement = null;
     this.audioCache = new Map();
+    this.speechSessionId = 0;
   }
 
   init() {
@@ -44,6 +45,8 @@ class AIAudioService {
   }
 
   stopCurrentSpeech() {
+    // Instantly invalidate any active speech session loop to eliminate double audio overlapping
+    this.speechSessionId++;
     if (this.currentBufferSource) {
       try {
         this.currentBufferSource.onended = null;
@@ -76,6 +79,7 @@ class AIAudioService {
     this.init();
     // Stop any ongoing speech immediately to eliminate overlapping/double sound
     this.stopCurrentSpeech();
+    const activeSessionId = this.speechSessionId;
 
     // Clean text thoroughly for ultra-smooth natural human speech without reading symbols
     const cleanedText = rawText
@@ -106,13 +110,15 @@ class AIAudioService {
     for (const chunk of chunks) {
       const textToSpeak = chunk.trim();
       if (!textToSpeak) continue;
+      // Guarantee loop cancellation if a new speech was triggered
+      if (this.speechSessionId !== activeSessionId) break;
       if (onPauseCheck && onPauseCheck()) break;
 
-      await this.speakChunk(textToSpeak, onPauseCheck);
+      await this.speakChunk(textToSpeak, onPauseCheck, activeSessionId);
     }
   }
 
-  speakChunk(text, onPauseCheck) {
+  speakChunk(text, onPauseCheck, sessionId) {
     return new Promise((resolve) => {
       let isResolved = false;
       const safeResolve = () => {
@@ -123,6 +129,11 @@ class AIAudioService {
           resolve();
         }
       };
+
+      if (sessionId !== undefined && this.speechSessionId !== sessionId) {
+        safeResolve();
+        return;
+      }
 
       // Safety timeout after 10 seconds max per speech chunk to prevent UI freeze
       const safetyTimer = setTimeout(safeResolve, 10000);

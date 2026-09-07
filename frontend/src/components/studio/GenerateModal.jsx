@@ -15,6 +15,7 @@ export const GenerateModal = () => {
     isGenerateModalOpen,
     setIsGenerateModalOpen,
     setActiveLessonData,
+    setDeepSearchLesson,
     setEnvironment,
     setFlappySpeech,
     setIsGeneratingAI,
@@ -74,7 +75,7 @@ export const GenerateModal = () => {
       setIsGenerating(false);
       setIsGenerateModalOpen(false);
 
-      engineInstance.start(lessonData);
+      setDeepSearchLesson(lessonData);
     } catch (err) {
       console.error(err);
       setIsGenerating(false);
@@ -102,7 +103,7 @@ export const GenerateModal = () => {
       }
 
       setIsGenerateModalOpen(false);
-      engineInstance.start(parsedLesson);
+      setDeepSearchLesson(parsedLesson);
     } catch (err) {
       setJsonError(err.message);
     }

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useStudioStore } from './store/studioStore';
 import { StudioHeader } from './components/studio/StudioHeader';
 import { TopicBar } from './components/studio/TopicBar';
 import { LeftPanel } from './components/studio/LeftPanel';
@@ -9,8 +10,11 @@ import { FlappyWidget } from './components/studio/FlappyWidget';
 import { VirtualCursor } from './components/studio/VirtualCursor';
 import { GenerateModal } from './components/studio/GenerateModal';
 import { WelcomeModal } from './components/studio/WelcomeModal';
+import { DeepSearchModal } from './components/studio/DeepSearchModal';
 
 export default function App() {
+  const { deepSearchLesson, setDeepSearchLesson } = useStudioStore();
+
   return (
     <div className="h-screen w-screen flex flex-col bg-slate-100 font-sans overflow-hidden antialiased text-slate-900 relative">
       {/* Studio Header Navigation */}
@@ -40,6 +44,14 @@ export default function App() {
 
       {/* Phlappy AI Studio Welcome & Help Modal */}
       <WelcomeModal />
+
+      {/* Deep Search & Recording Preparation Overlay */}
+      {deepSearchLesson && (
+        <DeepSearchModal
+          lessonData={deepSearchLesson}
+          onClose={() => setDeepSearchLesson(null)}
+        />
+      )}
     </div>
   );
 }
