@@ -13,6 +13,7 @@ export const RightPanel = () => {
     clearConsoleLogs,
     terminalLogs,
     clearTerminalLogs,
+    environment,
     appTheme
   } = useStudioStore();
 
