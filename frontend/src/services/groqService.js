@@ -1,26 +1,40 @@
-// Groq LLM API Service for Topic-Specific Lessons & Clean Scratch Code
+// Groq LLM API Service for Topic-Specific Lessons with Deep Definition Comments & Real Mentor Pacing
 
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MODEL_NAME = 'groq/compound-mini';
 
 const SYSTEM_PROMPT = `
-You are Phlappy, an expert AI Teacher and Coding Instructor for TCM One Code Studio.
-You teach programming topics from scratch like a REAL HUMAN MENTOR in front of a live IDE!
-Supported Languages: Python, HTML, CSS, JavaScript, C, and C++.
+You are Phlappy, an expert AI Master Instructor for TCM One Code Studio.
+You teach programming topics from scratch like a REAL HUMAN MENTOR standing in front of a live classroom!
 
-CRITICAL PEDAGOGY & DEEP LINE-BY-LINE EXPLANATION RULES:
-1. ALWAYS KEEP CODE EXAMPLES CLEAN, BASIC & SIMPLE TO UNDERSTAND (3-5 lines per example).
-2. DO NOT DUMP ALL CODE AT ONCE! Write ONLY ONE basic example per "write_code" step.
-3. DEEP LINE-BY-LINE EXPLANATION REQUIREMENT:
-   - Immediately after writing code ("write_code"), your "speak" step MUST explain every line of code line-by-line in clear, friendly Hinglish.
-   - Explain what line 1 does, line 2 does, line 3 does, line 4 does (variables, types, loop condition, array access, return values).
-4. PEDAGOGY LOOP FOR EACH EXAMPLE:
-   - "write_code": Write 1 simple basic code example (3-5 lines).
-   - "speak": Provide DEEP LINE-BY-LINE explanation in Hinglish.
-   - "show_console" (for JS/console.log) / "show_preview" (for Web UI) / "show_terminal" (for Python/C/C++) + "run_code": SHOW LIVE OUTPUT RIGHT AWAY!
-   - "speak": Comment on the live output.
-   - Move to next example in a SEPARATE "write_code" step.
+CRITICAL PEDAGOGY & DEFINITION COMMENT RULES:
+1. MANDATORY DEFINITION IN COMMENTS:
+   - BEFORE writing executable code in a "write_code" step, ALWAYS write 3 to 6 lines of clean, structured code comments containing the DEFINITION & CONCEPT of the topic!
+   - Example format in code:
+     // =========================================================
+     // CONCEPT & DEFINITION: JavaScript Variables (var, let, const)
+     // - Definition: Variables store data values in memory.
+     // - var: Function-scoped (legacy syntax).
+     // - let: Block-scoped (modern ES6 mutable variable).
+     // - const: Block-scoped (constant immutable value).
+     // =========================================================
+
+2. SLOW REAL MENTOR PACING (2 TO 4 MINUTES SESSION DURATION):
+   - Teach slowly, calmly, and thoroughly like a real human mentor. Do NOT rush!
+   - Generate 14 to 20 detailed sequential steps so the session lasts 2 to 4 minutes.
+
+3. DEEP LINE-BY-LINE EXPLANATION:
+   - Immediately after writing code ("write_code"), your "speak" step MUST explain every single line of code line-by-line in clear, friendly Hinglish.
+   - Explain line 1, line 2, line 3, line 4 (variable name, data type, loop condition, array access, return value, console output).
+
+4. STEP-BY-STEP CONSOLE/TERMINAL SYNCHRONIZATION:
+   - Step A: "write_code" (Write code with definition comments).
+   - Step B: "speak" (Deep line-by-line explanation).
+   - Step C: "speak" ("Aao ab Terminal/Console panel open karke live output check karte hain...").
+   - Step D: "show_console" (or "show_terminal" / "show_preview") + "run_code".
+   - Step E: "speak" (Detailed analysis of the live output).
+   - Step F: Move to Example 2 in a separate "write_code" step!
 
 LANGUAGE & ENVIRONMENT RULES:
 - C: Environment "C_BASIC", main file "main.c", includes <stdio.h>, uses printf().
@@ -33,17 +47,18 @@ STRICTLY RETURN JSON ONLY:
   "title": "Topic Name",
   "environment": "HTML_CSS_JS" | "PYTHON_BASIC" | "C_BASIC" | "CPP_BASIC",
   "syllabus": [
-    { "id": 1, "title": "Module 1: Concept & Setup", "description": "...", "status": "pending" },
+    { "id": 1, "title": "Module 1: Concept & Definition Setup", "description": "...", "status": "pending" },
     { "id": 2, "title": "Module 2: Basic Syntax & Variables", "description": "...", "status": "pending" },
     { "id": 3, "title": "Module 3: Operations & Logic", "description": "...", "status": "pending" },
     { "id": 4, "title": "Module 4: Practical Output & Verification", "description": "...", "status": "pending" },
     { "id": 5, "title": "Module 5: Summary & Best Practices", "description": "...", "status": "pending" }
   ],
   "steps": [
-    { "type": "speak", "text": "Hinglish intro..." },
+    { "type": "speak", "text": "Hinglish intro introducing the concept..." },
     { "type": "open_file", "file": "script.js" },
-    { "type": "write_code", "file": "script.js", "code": "..." },
+    { "type": "write_code", "file": "script.js", "code": "// =========================================\n// CONCEPT DEFINITION: ...\n// =========================================\n..." },
     { "type": "speak", "text": "Line 1: ... Line 2: ... Line 3: ... Detailed Hinglish line-by-line explanation." },
+    { "type": "speak", "text": "Aao ab Console panel open karke live output verify karte hain." },
     { "type": "show_console" },
     { "type": "speak", "text": "Explanation of live output..." },
     { "type": "conclude", "text": "Summary..." }
@@ -54,10 +69,10 @@ STRICTLY RETURN JSON ONLY:
 function getRichFallbackLesson(topic, envKey) {
   const topicLower = topic.toLowerCase();
   const defaultSyllabus = [
-    { id: 1, title: 'Module 1: Concept & Foundations', description: `Detailed Hinglish explanation of ${topic} concept & real-world use`, status: 'pending' },
-    { id: 2, title: 'Module 2: Code Structure & Setup', description: `Setting up workspace files and basic syntax from scratch`, status: 'pending' },
-    { id: 3, title: 'Module 3: Incremental Implementation & Execution', description: `Writing working example code line-by-line in editor`, status: 'pending' },
-    { id: 4, title: 'Module 4: Practical Output Verification', description: `Executing preview/console/terminal after each example to analyze output`, status: 'pending' },
+    { id: 1, title: 'Module 1: Concept & Definition Setup', description: `Detailed Hinglish explanation of ${topic} concept & real-world use`, status: 'pending' },
+    { id: 2, title: 'Module 2: Code Structure & Definitions', description: `Writing full definition comments and syntax rules in editor`, status: 'pending' },
+    { id: 3, title: 'Module 3: Incremental Code Implementation', description: `Writing working example code line-by-line with deep explanations`, status: 'pending' },
+    { id: 4, title: 'Module 4: Live Output Verification', description: `Executing preview/console/terminal after each example to analyze output`, status: 'pending' },
     { id: 5, title: 'Module 5: Summary & Best Practices', description: `Recap of key takeaways, memory rules & best practices`, status: 'pending' }
   ];
 
@@ -67,20 +82,21 @@ function getRichFallbackLesson(topic, envKey) {
       environment: 'CPP_BASIC',
       syllabus: defaultSyllabus,
       steps: [
-        { type: 'speak', text: `Namaste dosto! Aaj hum C++ me ${topic} ko bilkul zero level se seekhenge. Pehle samjhte hain ki ${topic} kya hai.` },
+        { type: 'speak', text: `Namaste dosto! Main Phlappy hoon. Aaj hum C++ me ${topic} ko bilkul zero se deep mentor level par seekhenge.` },
         { type: 'open_file', file: 'main.cpp' },
-        { type: 'write_code', file: 'main.cpp', code: `#include <iostream>\n#include <string>\nusing namespace std;\n\nint main() {\n    cout << "=== Phlappy AI Teacher: ${topic} ===" << endl;\n` },
-        { type: 'speak', text: `Humne #include <iostream> aur namespace std declare kiya. Ab Example 1 write karke output check karte hain!` },
-        { type: 'write_code', file: 'main.cpp', code: `    // Example 1: Basic String & Integer Variables\n    string studentName = "Phlappy C++ Learner";\n    int totalMarks = 485;\n    cout << "Student: " << studentName << " | Marks: " << totalMarks << endl;\n` },
-        { type: 'speak', text: `Example 1 complete! Aao Terminal me G++ compiler run karke output verify karte hain.` },
+        { type: 'write_code', file: 'main.cpp', code: `// =========================================================\n// CONCEPT & DEFINITION: C++ ${topic}\n// - Definition: High-performance object-oriented programming concept.\n// - Purpose: Efficient memory management and structured execution.\n// =========================================================\n\n#include <iostream>\n#include <string>\nusing namespace std;\n\nint main() {\n    cout << "=== Phlappy AI Teacher: ${topic} ===" << endl;\n` },
+        { type: 'speak', text: `Sabse pehle code comments me dekhiye humne ${topic} ki concept definition likhi hai. Isse aapko theoretical clarity milegi.` },
+        { type: 'write_code', file: 'main.cpp', code: `    // Line 1: Declare string variable for Student Name\n    string studentName = "Phlappy C++ Learner";\n    // Line 2: Declare integer variable for total marks\n    int totalMarks = 485;\n    // Line 3: Output student info using cout stream\n    cout << "Student: " << studentName << " | Marks: " << totalMarks << endl;\n` },
+        { type: 'speak', text: `Aao line-by-line samjhte hain: Line 1 me string type variable studentName declare kiya. Line 2 me int variable totalMarks me 485 store kiya. Line 3 me cout operator se terminal par print kiya.` },
+        { type: 'speak', text: `Aao ab Terminal panel open karke G++ compiler run karte hain aur live output dekhte hain!` },
         { type: 'show_terminal' },
         { type: 'run_code' },
-        { type: 'speak', text: `Bahut badiya! Terminal me student name aur marks print ho gaye. Ab aao Example 2 calculate karte hain.` },
-        { type: 'write_code', file: 'main.cpp', code: `    // Example 2: Double Calculation\n    double percentage = (totalMarks / 500.0) * 100;\n    cout << "Calculated Percentage: " << percentage << "%" << endl;\n    return 0;\n}\n` },
-        { type: 'speak', text: `Example 2 me percentage calculate ho gaya. Aao terminal me rerun output dekhte hain!` },
+        { type: 'speak', text: `Terminal output me dekhiye student name aur total marks bilkul sahi print hue.` },
+        { type: 'write_code', file: 'main.cpp', code: `    // Example 2: Percentage calculation\n    double percentage = (totalMarks / 500.0) * 100;\n    cout << "Calculated Percentage: " << percentage << "%" << endl;\n    return 0;\n}\n` },
+        { type: 'speak', text: `Example 2 me double data type se percentage calculate ki aur return 0 se program exit hua.` },
         { type: 'show_terminal' },
         { type: 'run_code' },
-        { type: 'conclude', text: `Toh dosto, yeh tha ${topic} in C++! Fast execution aur explicit data types C++ ko powerful banate hain.` }
+        { type: 'conclude', text: `Toh dosto, yeh tha ${topic} in C++! Always write clear definition comments before coding.` }
       ]
     };
   }
@@ -91,20 +107,21 @@ function getRichFallbackLesson(topic, envKey) {
       environment: 'C_BASIC',
       syllabus: defaultSyllabus,
       steps: [
-        { type: 'speak', text: `Namaste dosto! Aaj hum C Language me ${topic} ko bilkul basic concept ke saath seekhenge.` },
+        { type: 'speak', text: `Namaste dosto! Aaj hum C Language me ${topic} ko bilkul basic se deep level par seekhenge.` },
         { type: 'open_file', file: 'main.c' },
-        { type: 'write_code', file: 'main.c', code: `#include <stdio.h>\n\nint main() {\n    printf("=== Phlappy AI Teacher: ${topic} ===\\n");\n` },
-        { type: 'speak', text: `Humne #include <stdio.h> Include ki hai. Aao Example 1 declare karke output execute karte hain.` },
-        { type: 'write_code', file: 'main.c', code: `    // Example 1: Basic Variables & Format Specifiers\n    int student_id = 101;\n    printf("Student ID: %d\\n", student_id);\n` },
-        { type: 'speak', text: `Example 1 complete! Aao GCC compiler run karke Terminal me output verify karte hain.` },
+        { type: 'write_code', file: 'main.c', code: `/* =========================================================\n   CONCEPT & DEFINITION: C Language ${topic}\n   - Definition: Low-level procedural programming logic.\n   - Purpose: Direct hardware interaction & memory efficiency.\n   ========================================================= */\n\n#include <stdio.h>\n\nint main() {\n    printf("=== Phlappy AI Teacher: ${topic} ===\\n");\n` },
+        { type: 'speak', text: `Editor me sabse pehle humne ${topic} ki C definition and header comments likhi hain.` },
+        { type: 'write_code', file: 'main.c', code: `    // Line 1: Integer Variable declaration for Student ID\n    int student_id = 101;\n    // Line 2: Output formatted integer string using %d format specifier\n    printf("Student ID: %d\\n", student_id);\n` },
+        { type: 'speak', text: `Line-by-line explanation: Line 1 me int student_id variable banaya 101 value ke saath. Line 2 me printf function me %d specifier se ID print ki.` },
+        { type: 'speak', text: `Aao ab Terminal panel open karke GCC compiler output check karte hain.` },
         { type: 'show_terminal' },
         { type: 'run_code' },
-        { type: 'speak', text: `Shabash! Terminal me Student ID print ho gayi. Aao ab Example 2 float score specify karte hain.` },
-        { type: 'write_code', file: 'main.c', code: `    // Example 2: Float Grade Calculation\n    float score = 98.5;\n    printf("Final Score: %.2f\\n", score);\n    printf("C Program executed successfully!\\n");\n    return 0;\n}\n` },
-        { type: 'speak', text: `Example 2 ready hai! Aao Terminal me rerun karke latest output verify karte hain.` },
+        { type: 'speak', text: `Terminal me Student ID 101 print ho gaya.` },
+        { type: 'write_code', file: 'main.c', code: `    // Line 3: Float variable for grade score\n    float score = 98.5;\n    printf("Final Score: %.2f\\n", score);\n    return 0;\n}\n` },
+        { type: 'speak', text: `Line 3 me float variable score me 98.5 store kiya aur %.2f se 2 decimal places tak display kiya.` },
         { type: 'show_terminal' },
         { type: 'run_code' },
-        { type: 'conclude', text: `Toh dosto, yeh tha ${topic} in C Programming! Format specifiers aur semicolons ka dhyan rakhein.` }
+        { type: 'conclude', text: `Toh dosto, yeh tha ${topic} in C! Definition comments aur format specifiers sabse imp hain.` }
       ]
     };
   }
@@ -115,56 +132,44 @@ function getRichFallbackLesson(topic, envKey) {
       environment: 'PYTHON_BASIC',
       syllabus: defaultSyllabus,
       steps: [
-        { type: 'speak', text: `Namaste dosto! Aaj hum Python me ${topic} ko bilkul basic se seekhenge.` },
+        { type: 'speak', text: `Namaste dosto! Aaj hum Python me ${topic} ko bilkul zero level se seekhenge.` },
         { type: 'open_file', file: 'main.py' },
-        { type: 'write_code', file: 'main.py', code: `# ====================================\n# Phlappy AI Teacher: ${topic}\n# ====================================\n\n# Example 1: Simple For Loop (0 se 4 iterations)\nfor i in range(5):\n    print("For Loop iteration:", i)\n` },
-        { type: 'speak', text: `Dekhiye Example 1 me For loop 0 se 4 tak iterate karega. Aao pehle Example 1 run karke terminal output dekhte hain!` },
+        { type: 'write_code', file: 'main.py', code: `# =========================================================\n# CONCEPT & DEFINITION: Python ${topic}\n# - Definition: High-level dynamic scripting language concept.\n# - Use Case: Data analysis, web backends, and automation.\n# =========================================================\n\n# Line 1: Topic Title banner\nprint("=== Phlappy AI Teacher: ${topic} ===")\n` },
+        { type: 'speak', text: `Python file ke top par humne ${topic} ki definition comments write ki hain.` },
+        { type: 'write_code', file: 'main.py', code: `# Example 1: For Loop iteration (0 se 4 तक)\nfor i in range(5):\n    print("Iteration index:", i)\n` },
+        { type: 'speak', text: `Line-by-line breakdown: range(5) function 0 se 4 tak numbers generate karega aur variable 'i' har iteration me update hoga.` },
+        { type: 'speak', text: `Aao ab Terminal panel open karke Python script run karte hain.` },
         { type: 'show_terminal' },
         { type: 'run_code' },
-        { type: 'speak', text: `Dekhiye terminal me For loop ki saari 5 iterations print ho gayi! Ab aao Example 2 While loop write karte hain.` },
-        { type: 'write_code', file: 'main.py', code: `\n# Example 2: While Loop (Sum calculation)\ncounter = 1\ntotal = 0\nwhile counter <= 5:\n    total += counter\n    counter += 1\nprint("While loop total sum:", total)\n` },
-        { type: 'speak', text: `While loop 1 se 5 tak counter add karega. Aao rerun karke While loop output verify karte hain!` },
+        { type: 'speak', text: `Terminal output me dekhiye index 0 se 4 tak print ho gaya!` },
+        { type: 'write_code', file: 'main.py', code: `\n# Example 2: While loop with accumulator sum\ncounter = 1\ntotal = 0\nwhile counter <= 5:\n    total += counter\n    counter += 1\nprint("Calculated Total Sum:", total)\n` },
+        { type: 'speak', text: `Line-by-line: counter 1 se shuru hoga, jab tak counter <= 5 hai total me counter add hota rahega.` },
         { type: 'show_terminal' },
         { type: 'run_code' },
-        { type: 'conclude', text: `Toh dosto, har example ke baad terminal output dekhna sabse best pedagogy hai!` }
+        { type: 'conclude', text: `Toh dosto, Python me simple indentation aur definition comments se code clean rehta hai.` }
       ]
     };
   }
 
   // JS / Web Fallback
-  if (topicLower.includes('js') || topicLower.includes('javascript') || topicLower.includes('loop')) {
-    return {
-      title: topic,
-      environment: 'HTML_CSS_JS',
-      syllabus: defaultSyllabus,
-      steps: [
-        { type: 'speak', text: `Namaste dosto! Aaj hum JavaScript me ${topic} ko bilkul basic se deep level tak seekhenge.` },
-        { type: 'open_file', file: 'script.js' },
-        { type: 'write_code', file: 'script.js', code: `// Example 1: Simple 1 to 5 counting loop\nfor (let i = 1; i <= 5; i++) {\n  console.log("Count:", i);\n}\n` },
-        { type: 'speak', text: `Dekhiye Example 1 me humne simple for loop se 1 se 5 tak numbers print kiye. Aao Console panel open karke pehla live output inspect karte hain!` },
-        { type: 'show_console' },
-        { type: 'speak', text: `Bahut badiya! Console me Count 1 se 5 print ho gaya. Ab aao Example 2: Array elements iterate karte hain.` },
-        { type: 'write_code', file: 'script.js', code: `\n// Example 2: Array ke items par loop\nconst fruits = ["Apple", "Banana", "Mango"];\nfor (let idx = 0; idx < fruits.length; idx++) {\n  console.log("Fruit:", fruits[idx]);\n}\n` },
-        { type: 'speak', text: `Example 2 me array elements (Apple, Banana, Mango) for loop se iterate hue. Aao Console me output verify karte hain!` },
-        { type: 'show_console' },
-        { type: 'conclude', text: `Toh dosto, har basic example ko alag-alag run karke dekhna sabse best mentor approach hai!` }
-      ]
-    };
-  }
-
   return {
     title: topic,
     environment: 'HTML_CSS_JS',
     syllabus: defaultSyllabus,
     steps: [
-      { type: 'speak', text: `Namaste dosto! Aaj hum ${topic} ko Web Development me zero se advance tak seekhenge.` },
-      { type: 'open_file', file: 'index.html' },
-      { type: 'write_code', file: 'index.html', code: `<!DOCTYPE html>\n<html>\n<body>\n  <h1>${topic}</h1>\n  <script src="script.js"></script>\n</body>\n</html>` },
-      { type: 'show_preview' },
+      { type: 'speak', text: `Namaste dosto! Main Phlappy hoon. Aaj hum JavaScript me ${topic} ko bilkul basic definition ke saath seekhenge.` },
       { type: 'open_file', file: 'script.js' },
-      { type: 'write_code', file: 'script.js', code: `console.log("${topic} initialized");` },
+      { type: 'write_code', file: 'script.js', code: `// =========================================================\n// CONCEPT & DEFINITION: JavaScript Variables & Scope\n// - Definition: Variables are containers for storing data values.\n// - var: Function-scoped or global variable (legacy syntax).\n// - let: Block-scoped mutable variable (modern ES6 standard).\n// - const: Block-scoped constant value that cannot be reassigned.\n// =========================================================\n` },
+      { type: 'speak', text: `Sabse pehle script.js me dekhiye humne Variables ki complete DEFINITION and Concept comments likhi hai. Isse har point clear ho jayega.` },
+      { type: 'write_code', file: 'script.js', code: `// Line 1: 'var' declaration (Global/Function scoped)\nvar studentName = "Phlappy AI Learner";\n\n// Line 2: 'let' declaration (Block-scoped mutable variable)\nlet totalMarks = 95;\n\n// Line 3: 'const' declaration (Block-scoped constant)\nconst PASSING_MARKS = 40;\n\nconsole.log("Student Name:", studentName);\nconsole.log("Total Marks:", totalMarks, "| Passing Threshold:", PASSING_MARKS);\n` },
+      { type: 'speak', text: `Aao ab ek-ek line samjhte hain: Line 1 me var studentName me string value store ki. Line 2 me let totalMarks me 95 store kiya. Line 3 me const PASSING_MARKS ko 40 par fix kiya. Baad me console.log se print kiya.` },
+      { type: 'speak', text: `Aao ab Console panel open karke live output inspect karte hain!` },
       { type: 'show_console' },
-      { type: 'conclude', text: `Lesson completed!` }
+      { type: 'speak', text: `Console me student name 'Phlappy AI Learner' aur total marks 95 bilkul sahi display ho rahe hain.` },
+      { type: 'write_code', file: 'script.js', code: `\n// Example 2: Block Scope comparison (let vs var)\nif (true) {\n  var globalScopeVar = "I am visible everywhere!";\n  let blockScopeLet = "I am restricted inside this block!";\n}\nconsole.log(globalScopeVar);\n// console.log(blockScopeLet); // ReferenceError if un-commented\n` },
+      { type: 'speak', text: `Example 2 line-by-line: if-block ke andar banaya var globalScopeVar bahar bhi accessible hai, par let blockScopeLet sirf if-block ke andar tak limited hai.` },
+      { type: 'show_console' },
+      { type: 'conclude', text: `Toh dosto, yeh tha ${topic}! Comments me definition aur clean code likhna professional standard hai.` }
     ]
   };
 }
@@ -204,14 +209,15 @@ export async function generateLessonFromGroq({ topic, language = 'Hinglish', dif
   const prompt = `Generate a deep 3 to 4 minute topic-specific lesson for Topic: "${topic}". Difficulty: ${difficulty}. Language: ${language}. Environment: ${actualEnv}.
 Requirements:
 1. Provide a 5-module "syllabus" array breaking down the lesson roadmap for "${topic}".
-2. Generate 10 to 14 detailed sequential steps ("speak", "open_file", "write_code", "show_console"/"show_preview"/"show_terminal", "run_code", "conclude").
-3. CRITICAL PEDAGOGY: KEEP EXAMPLES VERY BASIC AND SIMPLE (3-5 lines per example). DO NOT dump multiple examples in one code block!
+2. Generate 14 to 18 detailed sequential steps ("speak", "open_file", "write_code", "show_console"/"show_preview"/"show_terminal", "run_code", "conclude").
+3. CRITICAL DEFINITION REQUIREMENT: The VERY FIRST "write_code" step MUST write 3 to 6 lines of code comments containing the DEFINITION & CONCEPT of "${topic}".
 4. For EACH basic example (e.g. Example 1, Example 2):
-   - "write_code": Write ONLY Example 1 (3-5 lines).
-   - "speak": Explain Example 1 in Hinglish line-by-line.
-   - "show_console" (if console.log is used) or "show_preview" or "show_terminal" + "run_code": OPEN CONSOLE/PREVIEW/TERMINAL TO SHOW OUTPUT RIGHT AWAY!
-   - "speak": Briefly comment on Example 1 output.
-   - Then move to Example 2 in a separate "write_code" step!`;
+   - "write_code": Write 1 simple basic code example (3-5 lines) WITH concept comments.
+   - "speak": Explain Example 1 in Hinglish line-by-line (Line 1 does ..., Line 2 does ...).
+   - "speak": "Aao ab Console/Terminal panel open karke iska output inspect karte hain..."
+   - "show_console" (if console.log is used) or "show_preview" or "show_terminal" + "run_code": OPEN PANEL RIGHT AWAY!
+   - "speak": Comment on Example 1 live output.
+   - Move to Example 2 in a separate "write_code" step!`;
 
 
   try {
@@ -229,7 +235,7 @@ Requirements:
           { role: 'user', content: prompt }
         ],
         temperature: 0.2,
-        max_tokens: 3000
+        max_tokens: 3500
       })
     });
 
@@ -256,7 +262,6 @@ Requirements:
     let defaultFile = envKey === 'CPP_BASIC' ? 'main.cpp' : envKey === 'C_BASIC' ? 'main.c' : envKey === 'PYTHON_BASIC' ? 'main.py' : 'index.html';
     let currentOpenFileName = defaultFile;
 
-    // Code Splitter: If LLM returns a single write_code block containing multiple examples, split them into separate steps!
     const expandedRawSteps = [];
     for (const step of rawSteps) {
       let stepType = step.type ? String(step.type).toLowerCase() : 'speak';
@@ -337,7 +342,6 @@ Requirements:
       }
     }
 
-    // Pedagogy Guarantee: Ensure every code/explanation block runs and shows output IMMEDIATELY
     const finalSteps = [];
     const isTerminalEnv = envKey === 'PYTHON_BASIC' || envKey === 'C_BASIC' || envKey === 'CPP_BASIC';
 
@@ -363,7 +367,6 @@ Requirements:
             finalSteps.push({ type: 'show_terminal' });
             finalSteps.push({ type: 'run_code' });
           } else {
-            // For Web / JS stack: Check if code uses console.log
             const lastCodeStep = finalSteps.slice().reverse().find(s => s.type === 'write_code');
             const codeText = lastCodeStep?.code || '';
             if (codeText.includes('console.log') || codeText.includes('console.warn') || codeText.includes('console.error')) {

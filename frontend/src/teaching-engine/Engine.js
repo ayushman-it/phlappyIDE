@@ -466,7 +466,7 @@ class TeachingEngine {
       const nextIndex = currentStepIndex + 1;
       store.setCurrentStepIndex(nextIndex);
       if (nextIndex < lesson.steps.length) {
-        this.timer = setTimeout(() => this.executeCurrentStep(lesson), 600);
+        this.timer = setTimeout(() => this.executeCurrentStep(lesson), 850);
       } else {
         store.setFlappySpeech('Lesson completed successfully!', 'idle');
         store.setIsPlaying(false);
