@@ -9,7 +9,7 @@ export const VirtualCursor = () => {
 
   return (
     <div
-      className="fixed z-50 pointer-events-none transition-all duration-700 ease-out"
+      className="fixed z-50 pointer-events-none transition-all duration-900 ease-in-out"
       style={{
         left: `${cursorPosition.x}px`,
         top: `${cursorPosition.y}px`,

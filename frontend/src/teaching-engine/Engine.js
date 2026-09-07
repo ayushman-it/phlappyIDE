@@ -578,7 +578,7 @@ class TeachingEngine {
             const cOuts = evaluateCOutput(store.files['main.c'] || codeText);
             for (const outLine of cOuts) {
               store.addTerminalLog(`> ${outLine}`);
-              await this.delay(200);
+              await this.delay(450);
             }
           } else if (currentEnv === 'CPP_BASIC') {
             store.addTerminalLog(`$ g++ main.cpp -o main && ./main`);
@@ -586,7 +586,7 @@ class TeachingEngine {
             const cppOuts = evaluateCppOutput(store.files['main.cpp'] || codeText);
             for (const outLine of cppOuts) {
               store.addTerminalLog(`> ${outLine}`);
-              await this.delay(200);
+              await this.delay(450);
             }
           } else {
             store.addTerminalLog(`$ python ${targetFile}`);
@@ -594,7 +594,7 @@ class TeachingEngine {
             const pyOuts = evaluatePythonOutput(store.files['main.py'] || codeText);
             for (const outLine of pyOuts) {
               store.addTerminalLog(`> ${outLine}`);
-              await this.delay(200);
+              await this.delay(450);
             }
           }
         } else {
@@ -605,7 +605,7 @@ class TeachingEngine {
           }
         }
         // Observation pause after showing output
-        await this.delay(1800);
+        await this.delay(2500);
         break;
 
       case 'show_preview':
@@ -756,14 +756,14 @@ class TeachingEngine {
       current += char;
       store.updateFileContent(file, current);
 
-      let delayTime = typingSpeed === 'medium' ? 25 : 45;
+      let delayTime = typingSpeed === 'fast' ? 25 : typingSpeed === 'medium' ? 45 : 75;
 
       if (char === '\n') {
-        delayTime = typingSpeed === 'medium' ? 120 : 250;
+        delayTime = typingSpeed === 'fast' ? 120 : typingSpeed === 'medium' ? 250 : 450;
       } else if (char === ';' || char === '{' || char === '}' || char === '>') {
-        delayTime = typingSpeed === 'medium' ? 80 : 160;
+        delayTime = typingSpeed === 'fast' ? 100 : typingSpeed === 'medium' ? 180 : 300;
       } else if (char === ' ') {
-        delayTime = typingSpeed === 'medium' ? 15 : 30;
+        delayTime = typingSpeed === 'fast' ? 15 : typingSpeed === 'medium' ? 30 : 50;
       }
 
       await this.delay(delayTime);
