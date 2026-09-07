@@ -238,7 +238,15 @@ export const RightPanel = () => {
         {activeRightTab === 'terminal' && (
           <div className="h-full flex flex-col bg-slate-950 text-slate-200 font-mono text-xs">
             <div className="px-3 py-1.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
-              <span className="text-[10px] font-bold text-slate-400">Python Stdout Stream (Pyodide)</span>
+              <span className="text-[10px] font-bold text-slate-400">
+                {environment === 'CPP_BASIC'
+                  ? 'C++ Stdout Stream (G++ 13.2)'
+                  : environment === 'C_BASIC'
+                  ? 'C Stdout Stream (GCC 13.2)'
+                  : environment === 'PYTHON_BASIC'
+                  ? 'Python Stdout Stream (Python 3.11)'
+                  : 'Execution Output Stream'}
+              </span>
               <button
                 onClick={clearTerminalLogs}
                 className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
@@ -250,7 +258,13 @@ export const RightPanel = () => {
             <div className="flex-1 overflow-y-auto p-3 space-y-1 text-[11px]">
               {terminalLogs.length === 0 ? (
                 <div className="text-slate-600 italic">
-                  Python terminal ready. Run Python scripts to observe Pyodide output.
+                  {environment === 'CPP_BASIC'
+                    ? 'C++ terminal ready. Run main.cpp to observe compiler output.'
+                    : environment === 'C_BASIC'
+                    ? 'C terminal ready. Run main.c to observe GCC output.'
+                    : environment === 'PYTHON_BASIC'
+                    ? 'Python terminal ready. Run main.py to observe output.'
+                    : 'Terminal ready. Run code to observe output.'}
                 </div>
               ) : (
                 terminalLogs.map((line, idx) => (

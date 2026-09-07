@@ -124,25 +124,33 @@ class AIAudioService {
         }
       };
 
-      // 1. Attempt Smooth ElevenLabs Voice TTS via Web Audio API
+      // Safety timeout after 10 seconds max per speech chunk to prevent UI freeze
+      const safetyTimer = setTimeout(safeResolve, 10000);
+
+      const doneHandler = () => {
+        clearTimeout(safetyTimer);
+        safeResolve();
+      };
+
+      // 1. Attempt ElevenLabs Voice TTS via Web Audio API
       this.speakElevenLabs(text, ELEVENLABS_VOICE_ID)
-        .then(() => safeResolve())
+        .then(() => doneHandler())
         .catch((err1) => {
-          console.warn('ElevenLabs Primary Voice failed, trying fallback voice...', err1);
-          if (onPauseCheck && onPauseCheck()) { safeResolve(); return; }
+          console.warn('ElevenLabs Primary Voice failed:', err1.message || err1);
+          if (onPauseCheck && onPauseCheck()) { doneHandler(); return; }
 
           this.speakElevenLabs(text, ELEVENLABS_FALLBACK_VOICE)
-            .then(() => safeResolve())
+            .then(() => doneHandler())
             .catch((err2) => {
-              console.warn('ElevenLabs Fallback Voice failed, trying Google TTS...', err2);
-              if (onPauseCheck && onPauseCheck()) { safeResolve(); return; }
+              console.warn('ElevenLabs Fallback Voice failed:', err2.message || err2);
+              if (onPauseCheck && onPauseCheck()) { doneHandler(); return; }
 
               // 2. Attempt Google Translate TTS Fallback
-              this.speakGoogleTTS(text, safeResolve, () => {
-                if (onPauseCheck && onPauseCheck()) { safeResolve(); return; }
+              this.speakGoogleTTS(text, doneHandler, () => {
+                if (onPauseCheck && onPauseCheck()) { doneHandler(); return; }
 
                 // 3. Attempt Web Speech API Fallback
-                this.speakWebSpeechFallback(text).then(safeResolve);
+                this.speakWebSpeechFallback(text).then(doneHandler);
               });
             });
         });
@@ -180,6 +188,9 @@ class AIAudioService {
 
       if (!response.ok) {
         const errText = await response.text();
+        if (response.status === 401 && errText.includes('quota_exceeded')) {
+          console.error('ElevenLabs API Error: Credit Quota Exceeded for key', ELEVENLABS_API_KEY);
+        }
         throw new Error(`ElevenLabs API Error (${response.status}): ${errText}`);
       }
 
