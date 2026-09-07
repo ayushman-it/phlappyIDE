@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import { useStudioStore } from '../../store/studioStore';
 import { FileCode, Sparkles } from 'lucide-react';
@@ -20,6 +20,16 @@ export const CenterPanel = () => {
   const handleEditorMount = (editor) => {
     editorRef.current = editor;
   };
+
+  // Auto-scroll Monaco Editor to active typing line whenever file content changes
+  useEffect(() => {
+    if (editorRef.current && editorRef.current.getModel()) {
+      const lineCount = editorRef.current.getModel().getLineCount();
+      if (lineCount > 15) {
+        editorRef.current.revealLine(lineCount);
+      }
+    }
+  }, [files, activeFile]);
 
   const handleEditorChange = (value) => {
     if (value !== undefined) {

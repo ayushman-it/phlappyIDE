@@ -519,6 +519,7 @@ class TeachingEngine {
         break;
 
       case 'write_code':
+        store.clearConsoleLogs();
         if (store.files[targetFile] === undefined) {
           store.addFile(targetFile, '');
         }
@@ -552,6 +553,7 @@ class TeachingEngine {
         store.setCursorPosition({ x: 920, y: 165 });
         await this.delay(600);
         store.triggerCursorClick();
+        store.clearConsoleLogs();
         store.setActiveRightTab('console');
         await this.delay(500);
         break;
