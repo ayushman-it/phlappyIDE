@@ -123,7 +123,9 @@ export const useStudioStore = create((set, get) => ({
   setIsRecording: (rec) => set({ isRecording: rec, recordDuration: rec ? get().recordDuration : 0 }),
   setRecordDuration: (duration) => set({ recordDuration: duration }),
 
-  // Line Highlighting in Monaco
+  // Line Highlighting & Font Size in Monaco
+  editorFontSize: 16,
+  setEditorFontSize: (size) => set({ editorFontSize: size }),
   highlightedLine: null,
   setHighlightedLine: (line) => set({ highlightedLine: line })
 }));

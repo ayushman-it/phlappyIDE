@@ -1,13 +1,23 @@
 import React, { useRef, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import { useStudioStore } from '../../store/studioStore';
-import { FileCode, Sparkles } from 'lucide-react';
+import { FileCode, Sparkles, ZoomIn, ZoomOut, Terminal, CheckCircle2 } from 'lucide-react';
 
 export const CenterPanel = () => {
-  const { files, activeFile, setActiveFile, updateFileContent, environment, isPlaying } = useStudioStore();
+  const {
+    files,
+    activeFile,
+    setActiveFile,
+    updateFileContent,
+    environment,
+    isPlaying,
+    editorFontSize,
+    setEditorFontSize
+  } = useStudioStore();
   const editorRef = useRef(null);
 
   const getLanguage = (fileName) => {
+    if (!fileName) return 'plaintext';
     if (fileName.endsWith('.html')) return 'html';
     if (fileName.endsWith('.css')) return 'css';
     if (fileName.endsWith('.js')) return 'javascript';
@@ -25,7 +35,7 @@ export const CenterPanel = () => {
   useEffect(() => {
     if (editorRef.current && editorRef.current.getModel()) {
       const lineCount = editorRef.current.getModel().getLineCount();
-      if (lineCount > 15) {
+      if (lineCount > 10) {
         editorRef.current.revealLine(lineCount);
       }
     }
@@ -41,11 +51,13 @@ export const CenterPanel = () => {
     }
   };
 
+  const currentLineCount = (activeFile && files[activeFile]) ? files[activeFile].split('\n').length : 1;
+
   return (
-    <main className="flex-1 flex flex-col h-full bg-white border-r border-slate-200 overflow-hidden">
-      {/* IDE Compact Monaco File Tabs Header */}
-      <div className="flex items-center justify-between bg-slate-100/80 border-b border-slate-200 px-1 pt-1 h-8">
-        <div className="flex space-x-1 overflow-x-auto h-full items-end flex-1 max-w-md">
+    <main className="flex-1 flex flex-col h-full bg-slate-900 border-r border-slate-800 overflow-hidden select-none">
+      {/* Sleek IDE Monaco File Tabs Header */}
+      <div className="flex items-center justify-between bg-slate-950 border-b border-slate-800 px-2 h-9 flex-shrink-0">
+        <div className="flex space-x-1.5 overflow-x-auto h-full items-end flex-1 max-w-xl">
           {Object.keys(files).map((file) => {
             if (environment === 'PYTHON_BASIC' && !file.endsWith('.py')) return null;
             if (environment === 'C_BASIC' && !file.endsWith('.c')) return null;
@@ -57,67 +69,120 @@ export const CenterPanel = () => {
               <button
                 key={file}
                 onClick={() => setActiveFile(file)}
-                className={`flex-1 min-w-[100px] max-w-[140px] flex items-center justify-center space-x-1.5 px-3 py-1 rounded-t text-[11px] font-medium border-t border-x transition-colors cursor-pointer h-7 ${
+                className={`flex items-center space-x-2 px-3 py-1.5 rounded-t-lg text-xs font-bold transition-all cursor-pointer h-8 border-t border-x ${
                   isActive
-                    ? 'bg-white border-slate-200/90 text-rose-600 font-bold shadow-2xs'
-                    : 'bg-slate-100/50 border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-200/50'
+                    ? 'bg-slate-900 border-slate-700 text-rose-400 shadow-sm'
+                    : 'bg-slate-950/70 border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
                 }`}
               >
-                <FileCode className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">{file}</span>
+                <FileCode className={`w-3.5 h-3.5 ${isActive ? 'text-rose-400' : 'text-slate-500'}`} />
+                <span className="truncate max-w-[130px] font-mono tracking-tight">{file}</span>
+                {isActive && <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />}
               </button>
             );
           })}
         </div>
 
-        {/* Mode Indicator */}
-        <div className="px-2 text-[10px] font-bold text-slate-500 flex items-center space-x-1">
-          {isPlaying ? (
-            <span className="flex items-center text-rose-600 animate-pulse font-extrabold">
-              <Sparkles className="w-2.5 h-2.5 mr-1" /> Phlappy Writing...
+        {/* Font Size & Mode Controls */}
+        <div className="flex items-center space-x-2">
+          {/* Font Size Controls */}
+          <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5 text-slate-300">
+            <button
+              onClick={() => setEditorFontSize(Math.max(12, editorFontSize - 1))}
+              className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
+              title="Decrease Code Font Size"
+            >
+              <ZoomOut className="w-3.5 h-3.5" />
+            </button>
+
+            <span className="px-2 font-mono text-[11px] font-bold text-rose-400">
+              {editorFontSize}px
             </span>
-          ) : (
-            <span className="text-slate-400 font-mono">Developer Mode</span>
-          )}
+
+            <button
+              onClick={() => setEditorFontSize(Math.min(24, editorFontSize + 1))}
+              className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
+              title="Increase Code Font Size"
+            >
+              <ZoomIn className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Writing Indicator */}
+          <div className="px-2 text-[11px] font-bold text-slate-400 flex items-center">
+            {isPlaying ? (
+              <span className="flex items-center text-rose-400 animate-pulse font-extrabold bg-rose-950/50 px-2 py-0.5 rounded border border-rose-800/60">
+                <Sparkles className="w-3 h-3 mr-1 text-amber-400" /> Phlappy Writing...
+              </span>
+            ) : (
+              <span className="text-slate-500 font-mono text-[10px]">TCM Studio IDE</span>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Monaco Code Editor or Empty Studio Welcome Screen */}
+      {/* Monaco Code Editor Container */}
       {!activeFile || Object.keys(files).length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-50/50 text-center select-none">
-          <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 shadow-xs flex items-center justify-center mb-3">
-            <Sparkles className="w-6 h-6 text-rose-600 animate-pulse" />
+        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-950 text-center select-none">
+          <div className="w-14 h-14 rounded-2xl bg-rose-950/60 border border-rose-800/60 shadow-xl flex items-center justify-center mb-4">
+            <Sparkles className="w-7 h-7 text-rose-500 animate-pulse" />
           </div>
-          <h3 className="text-sm font-extrabold text-slate-800 mb-1 tracking-tight">
-            Welcome to TCM<span className="text-rose-600">One</span> Phlappy AI Studio
+          <h3 className="text-base font-black text-white mb-1.5 tracking-tight">
+            Welcome to TCM<span className="text-rose-500">One</span> Phlappy AI Code Studio
           </h3>
-          <p className="text-xs text-slate-500 max-w-sm mb-4 leading-relaxed font-medium">
-            Topic bar me koi bhi topic type kijiye (jaise <span className="font-bold text-slate-700">HTML Introduction</span>, <span className="font-bold text-slate-700">CSS Flexbox</span>, <span className="font-bold text-slate-700">Python Loops</span>) aur Phlappy scratch se naye files aur code create karke sikhayega!
+          <p className="text-xs text-slate-400 max-w-sm mb-4 leading-relaxed font-medium">
+            Topic bar me koi bhi topic type kijiye aur Phlappy HD clean code aur definition comments ke saath sikhayega!
           </p>
         </div>
       ) : (
-        <div className="flex-1 relative">
+        <div className="flex-1 relative bg-slate-900">
           <Editor
             height="100%"
             language={getLanguage(activeFile)}
             value={files[activeFile] || ''}
             onChange={handleEditorChange}
             onMount={handleEditorMount}
-            theme="vs-light"
+            theme="vs-dark"
             options={{
-              fontSize: 13,
-              fontFamily: '"SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace',
+              fontSize: editorFontSize,
+              lineHeight: Math.round(editorFontSize * 1.6),
+              fontFamily: '"Fira Code", "JetBrains Mono", "Cascadia Code", Menlo, Monaco, monospace',
+              fontLigatures: true,
               minimap: { enabled: false },
               scrollBeyondLastLine: false,
               automaticLayout: true,
               lineNumbers: 'on',
               roundedSelection: true,
-              padding: { top: 8 },
-              readOnly: false
+              padding: { top: 12, bottom: 12 },
+              readOnly: false,
+              cursorBlinking: 'smooth',
+              cursorSmoothCaretAnimation: 'on',
+              renderLineHighlight: 'all',
+              smoothScrolling: true
             }}
           />
         </div>
       )}
+
+      {/* Bottom Professional IDE Status Bar */}
+      <div className="h-6 bg-slate-950 border-t border-slate-800 px-3 flex items-center justify-between text-[10px] font-mono text-slate-400 flex-shrink-0">
+        <div className="flex items-center space-x-4">
+          <span className="flex items-center text-slate-300 font-semibold">
+            <Terminal className="w-3 h-3 mr-1 text-rose-500" />
+            {getLanguage(activeFile).toUpperCase()}
+          </span>
+          <span>Lines: <strong className="text-slate-200">{currentLineCount}</strong></span>
+          <span>Spaces: 2</span>
+          <span>UTF-8</span>
+        </div>
+
+        <div className="flex items-center space-x-3 text-slate-400">
+          <span className="flex items-center text-emerald-400 font-bold">
+            <CheckCircle2 className="w-3 h-3 mr-1" /> Ready
+          </span>
+          <span>Font: <strong className="text-rose-400">{editorFontSize}px</strong></span>
+        </div>
+      </div>
     </main>
   );
 };
