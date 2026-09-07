@@ -1,9 +1,9 @@
 // AI Speech Audio Service with ElevenLabs Voice Integration & Zero-Echo Audio Destination
 
 const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY || '';
-// High Quality Multilingual Voice IDs (George: JBFqnCBsd6RMkjVDRZzb, Jessica: cgSgspJ2msm6clMCkdW9)
-const ELEVENLABS_VOICE_ID = import.meta.env.VITE_ELEVENLABS_VOICE_ID || 'JBFqnCBsd6RMkjVDRZzb';
-const ELEVENLABS_FALLBACK_VOICE = 'cgSgspJ2msm6clMCkdW9';
+// High Quality Male Voice IDs (George: JBFqnCBsd6RMkjVDRZzb, Adam: pNInz6obpgDQGcFmaJgB)
+const ELEVENLABS_VOICE_ID = import.meta.env.VITE_ELEVENLABS_VOICE_ID || 'JBFqnCBsd6RMkjVDRZzb'; // George (Deep, clear male mentor)
+const ELEVENLABS_FALLBACK_VOICE = 'pNInz6obpgDQGcFmaJgB'; // Adam (Crisp professional male voice)
 
 class AIAudioService {
   constructor() {
@@ -262,16 +262,15 @@ class AIAudioService {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       const voices = window.speechSynthesis.getVoices();
-      const indianVoice = voices.find(
+      const maleVoice = voices.find(
         (v) =>
-          v.lang.includes('hi-IN') ||
-          v.lang.includes('en-IN') ||
-          v.name.includes('Hindi') ||
-          v.name.includes('India')
-      );
-      if (indianVoice) utterance.voice = indianVoice;
+          (v.lang.includes('hi') || v.lang.includes('en-IN') || v.name.includes('India')) &&
+          (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('david') || v.name.toLowerCase().includes('ravi') || v.name.toLowerCase().includes('hemant') || v.name.toLowerCase().includes('george'))
+      ) || voices.find(v => v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('david'));
+
+      if (maleVoice) utterance.voice = maleVoice;
       utterance.rate = 0.9;
-      utterance.pitch = 1.0;
+      utterance.pitch = 0.85; // Male vocal pitch tuning
 
       utterance.onend = () => resolve();
       utterance.onerror = () => resolve();
