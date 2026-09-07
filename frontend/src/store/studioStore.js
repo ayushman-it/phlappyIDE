@@ -123,6 +123,10 @@ export const useStudioStore = create((set, get) => ({
   setIsRecording: (rec) => set({ isRecording: rec, recordDuration: rec ? get().recordDuration : 0 }),
   setRecordDuration: (duration) => set({ recordDuration: duration }),
 
+  // Theme Selector: 'vscode-light' | 'coffee' | 'vscode-dark' | 'ios-glass'
+  appTheme: 'vscode-light',
+  setAppTheme: (theme) => set({ appTheme: theme }),
+
   // Line Highlighting & Font Size in Monaco
   editorFontSize: 16,
   setEditorFontSize: (size) => set({ editorFontSize: size }),

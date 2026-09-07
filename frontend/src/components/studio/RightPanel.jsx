@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useStudioStore } from '../../store/studioStore';
+import { getThemeClasses } from '../../utils/themeStyles';
 import { Play, Terminal, Eye, Trash2 } from 'lucide-react';
 
 export const RightPanel = () => {
@@ -11,8 +12,11 @@ export const RightPanel = () => {
     addConsoleLog,
     clearConsoleLogs,
     terminalLogs,
-    clearTerminalLogs
+    clearTerminalLogs,
+    appTheme
   } = useStudioStore();
+
+  const theme = getThemeClasses(appTheme);
 
   const consoleEndRef = useRef(null);
   const terminalEndRef = useRef(null);
@@ -112,15 +116,15 @@ export const RightPanel = () => {
   };
 
   return (
-    <aside className="w-[420px] bg-slate-50 border-l border-slate-200 flex flex-col h-full select-none">
+    <aside className={`w-[420px] ${theme.sidebarBg} border-l border-slate-200/60 flex flex-col h-full select-none transition-colors`}>
       {/* IDE Compact Right Panel Tab Headers */}
-      <div className="flex border-b border-slate-200 bg-white h-8">
+      <div className={`flex border-b border-slate-200/60 ${theme.tabsBg} h-8 transition-colors`}>
         <button
           onClick={() => setActiveRightTab('preview')}
           className={`flex-1 h-full text-[11px] font-bold flex items-center justify-center space-x-1 border-b-2 transition-colors cursor-pointer ${
             activeRightTab === 'preview'
-              ? 'border-rose-600 text-rose-600 bg-slate-50/50'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'border-rose-600 text-rose-600 bg-white/40 font-extrabold'
+              : 'border-transparent opacity-70 hover:opacity-100'
           }`}
         >
           <Eye className="w-3 h-3" />
@@ -131,8 +135,8 @@ export const RightPanel = () => {
           onClick={() => setActiveRightTab('console')}
           className={`flex-1 h-full text-[11px] font-bold flex items-center justify-center space-x-1 border-b-2 transition-colors cursor-pointer relative ${
             activeRightTab === 'console'
-              ? 'border-rose-600 text-rose-600 bg-slate-50/50'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'border-rose-600 text-rose-600 bg-white/40 font-extrabold'
+              : 'border-transparent opacity-70 hover:opacity-100'
           }`}
         >
           <Terminal className="w-3 h-3" />
@@ -146,8 +150,8 @@ export const RightPanel = () => {
           onClick={() => setActiveRightTab('terminal')}
           className={`flex-1 h-full text-[11px] font-bold flex items-center justify-center space-x-1 border-b-2 transition-colors cursor-pointer ${
             activeRightTab === 'terminal'
-              ? 'border-rose-600 text-rose-600 bg-slate-50/50'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'border-rose-600 text-rose-600 bg-white/40 font-extrabold'
+              : 'border-transparent opacity-70 hover:opacity-100'
           }`}
         >
           <Play className="w-3 h-3" />

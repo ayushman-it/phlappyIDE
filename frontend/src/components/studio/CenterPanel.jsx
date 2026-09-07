@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import { useStudioStore } from '../../store/studioStore';
+import { getThemeClasses } from '../../utils/themeStyles';
 import { FileCode, Sparkles, ZoomIn, ZoomOut, Terminal, CheckCircle2 } from 'lucide-react';
 
 export const CenterPanel = () => {
@@ -12,9 +13,12 @@ export const CenterPanel = () => {
     environment,
     isPlaying,
     editorFontSize,
-    setEditorFontSize
+    setEditorFontSize,
+    appTheme
   } = useStudioStore();
   const editorRef = useRef(null);
+
+  const theme = getThemeClasses(appTheme);
 
   const getLanguage = (fileName) => {
     if (!fileName) return 'plaintext';
@@ -54,9 +58,9 @@ export const CenterPanel = () => {
   const currentLineCount = (activeFile && files[activeFile]) ? files[activeFile].split('\n').length : 1;
 
   return (
-    <main className="flex-1 flex flex-col h-full bg-white border-r border-slate-200 overflow-hidden select-none">
+    <main className={`flex-1 flex flex-col h-full ${theme.editorBg} border-r border-slate-200/50 overflow-hidden select-none transition-colors`}>
       {/* Light Clean IDE Monaco File Tabs Header */}
-      <div className="flex items-center justify-between bg-slate-100/90 border-b border-slate-200 px-2 h-9 flex-shrink-0">
+      <div className={`flex items-center justify-between ${theme.tabsBg} border-b border-slate-200/60 px-2 h-9 flex-shrink-0 transition-colors`}>
         <div className="flex space-x-1 overflow-x-auto h-full items-end flex-1 max-w-xl">
           {Object.keys(files).map((file) => {
             if (environment === 'PYTHON_BASIC' && !file.endsWith('.py')) return null;
@@ -69,13 +73,13 @@ export const CenterPanel = () => {
               <button
                 key={file}
                 onClick={() => setActiveFile(file)}
-                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-t-lg text-xs font-bold transition-all cursor-pointer h-8 border-t border-x ${
+                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-t-lg text-xs transition-all cursor-pointer h-8 border-t border-x ${
                   isActive
-                    ? 'bg-white border-slate-200/90 text-rose-600 shadow-2xs font-extrabold'
-                    : 'bg-slate-100/60 border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-200/60'
+                    ? `${theme.tabActive} shadow-2xs`
+                    : 'opacity-75 hover:opacity-100 hover:bg-black/5 border-transparent'
                 }`}
               >
-                <FileCode className={`w-3.5 h-3.5 ${isActive ? 'text-rose-600' : 'text-slate-400'}`} />
+                <FileCode className={`w-3.5 h-3.5 ${isActive ? 'text-rose-600' : 'opacity-60'}`} />
                 <span className="truncate max-w-[130px] font-mono tracking-tight">{file}</span>
                 {isActive && <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />}
               </button>
@@ -86,7 +90,7 @@ export const CenterPanel = () => {
         {/* Font Size & Writing Controls */}
         <div className="flex items-center space-x-2">
           {/* Font Size Controls */}
-          <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs text-slate-700">
+          <div className="flex items-center bg-white/80 border border-slate-200/80 rounded-lg p-0.5 shadow-2xs text-slate-700">
             <button
               onClick={() => setEditorFontSize(Math.max(12, editorFontSize - 1))}
               className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
@@ -109,40 +113,40 @@ export const CenterPanel = () => {
           </div>
 
           {/* Writing Indicator */}
-          <div className="px-2 text-[11px] font-bold text-slate-600 flex items-center">
+          <div className="px-2 text-[11px] font-bold flex items-center">
             {isPlaying ? (
               <span className="flex items-center text-rose-600 animate-pulse font-extrabold bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
                 <Sparkles className="w-3 h-3 mr-1 text-amber-500 fill-amber-400" /> Phlappy Writing...
               </span>
             ) : (
-              <span className="text-slate-400 font-mono text-[10px]">TCM Studio IDE</span>
+              <span className="opacity-50 font-mono text-[10px]">TCM Studio IDE</span>
             )}
           </div>
         </div>
       </div>
 
-      {/* Monaco Code Editor Container - Clean Light Theme */}
+      {/* Monaco Code Editor Container */}
       {!activeFile || Object.keys(files).length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-50/50 text-center select-none">
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center select-none">
           <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-100 shadow-xs flex items-center justify-center mb-4">
             <Sparkles className="w-7 h-7 text-rose-600 animate-pulse" />
           </div>
-          <h3 className="text-base font-black text-slate-900 mb-1.5 tracking-tight">
+          <h3 className="text-base font-black mb-1.5 tracking-tight">
             Welcome to TCM<span className="text-rose-600">One</span> Phlappy AI Code Studio
           </h3>
-          <p className="text-xs text-slate-500 max-w-sm mb-4 leading-relaxed font-medium">
+          <p className="text-xs opacity-70 max-w-sm mb-4 leading-relaxed font-medium">
             Topic bar me koi bhi topic type kijiye aur Phlappy HD clean code aur definition comments ke saath sikhayega!
           </p>
         </div>
       ) : (
-        <div className="flex-1 relative bg-white">
+        <div className="flex-1 relative">
           <Editor
             height="100%"
             language={getLanguage(activeFile)}
             value={files[activeFile] || ''}
             onChange={handleEditorChange}
             onMount={handleEditorMount}
-            theme="vs-light"
+            theme={theme.editorMonacoTheme}
             options={{
               fontSize: editorFontSize,
               lineHeight: Math.round(editorFontSize * 1.6),
@@ -164,23 +168,23 @@ export const CenterPanel = () => {
         </div>
       )}
 
-      {/* Bottom Light IDE Status Bar */}
-      <div className="h-6 bg-slate-100/90 border-t border-slate-200 px-3 flex items-center justify-between text-[10px] font-mono text-slate-600 flex-shrink-0">
-        <div className="flex items-center space-x-4">
-          <span className="flex items-center text-slate-700 font-bold">
-            <Terminal className="w-3 h-3 mr-1 text-rose-600" />
+      {/* Bottom IDE Status Bar */}
+      <div className={`h-6 ${theme.statusBarBg} px-3 flex items-center justify-between text-[10px] font-mono flex-shrink-0 transition-colors`}>
+        <div className="flex items-center space-x-4 opacity-90">
+          <span className="flex items-center font-bold">
+            <Terminal className="w-3 h-3 mr-1" />
             {getLanguage(activeFile).toUpperCase()}
           </span>
-          <span>Lines: <strong className="text-slate-900">{currentLineCount}</strong></span>
+          <span>Lines: <strong>{currentLineCount}</strong></span>
           <span>Spaces: 2</span>
           <span>UTF-8</span>
         </div>
 
-        <div className="flex items-center space-x-3 text-slate-500">
-          <span className="flex items-center text-emerald-600 font-bold">
-            <CheckCircle2 className="w-3 h-3 mr-1" /> Ready
+        <div className="flex items-center space-x-3 opacity-90">
+          <span className="flex items-center font-bold">
+            <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-300" /> Ready
           </span>
-          <span>Font: <strong className="text-rose-600">{editorFontSize}px</strong></span>
+          <span>Font: <strong>{editorFontSize}px</strong></span>
         </div>
       </div>
     </main>
