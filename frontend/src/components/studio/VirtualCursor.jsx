@@ -24,11 +24,6 @@ export const VirtualCursor = () => {
       {/* SVG Mouse Pointer Icon with Glow */}
       <div className="relative">
         <MousePointer2 className="w-6 h-6 text-rose-600 fill-rose-600 drop-shadow-[0_4px_10px_rgba(225,29,72,0.5)] transform -rotate-12" />
-        
-        {/* Flappy AI Cursor Tag */}
-        <span className="absolute left-4 top-4 bg-rose-600 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow-md whitespace-nowrap">
-          Flappy AI
-        </span>
       </div>
     </div>
   );
