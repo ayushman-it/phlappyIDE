@@ -410,7 +410,16 @@ class TeachingEngine {
       store.setActiveFile('index.html');
     }
 
-    this.executeCurrentStep(lesson);
+    // Show initial warm-up speech balloon so student can orient themselves before playback begins
+    store.setFlappySpeech(`Lesson Roadmap Loaded: ${lesson.title}. Initializing...`, 'idle');
+
+    if (this.timer) clearTimeout(this.timer);
+    // 1.8 second orientation pause for student prep before step 1 speech starts
+    this.timer = setTimeout(() => {
+      if (!useStudioStore.getState().isPaused && useStudioStore.getState().isPlaying) {
+        this.executeCurrentStep(lesson);
+      }
+    }, 1800);
   }
 
   pause() {
@@ -489,6 +498,7 @@ class TeachingEngine {
       case 'explain':
       case 'conclude':
         store.setFlappySpeech(step.text || 'Phlappy AI Teacher explaining concept...', 'speaking');
+        await this.delay(400); // Gentle prep delay before audio speech starts
         await this.speakSpeech(step.text || '');
         break;
 
