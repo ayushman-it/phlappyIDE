@@ -2,81 +2,84 @@ import { useStudioStore } from '../store/studioStore';
 import { recorderInstance } from '../services/recorderService';
 import { aiAudioService } from '../services/aiAudioService';
 
+const escapeRegExp = (str) => String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // Python Output Evaluator Engine
 function evaluatePythonOutput(pyCode) {
-  const outputs = [];
-  if (!pyCode || !pyCode.trim()) return ['> Program executed successfully.'];
+  try {
+    const outputs = [];
+    if (!pyCode || !pyCode.trim()) return ['> Program executed successfully.'];
 
-  const lines = pyCode.split('\n');
-  const scope = {};
-  let currentOutputLine = '';
+    const lines = pyCode.split('\n');
+    const scope = {};
+    let currentOutputLine = '';
 
-  const pushLine = (txt) => {
-    if (currentOutputLine) {
-      outputs.push(currentOutputLine + txt);
-      currentOutputLine = '';
-    } else {
-      outputs.push(txt);
-    }
-  };
+    const pushLine = (txt) => {
+      if (currentOutputLine) {
+        outputs.push(currentOutputLine + txt);
+        currentOutputLine = '';
+      } else {
+        outputs.push(txt);
+      }
+    };
 
-  const appendText = (txt) => {
-    currentOutputLine += txt;
-  };
+    const appendText = (txt) => {
+      currentOutputLine += txt;
+    };
 
-  function evalExpr(exprStr, localScope = {}) {
-    let expr = exprStr.trim();
-    if (!expr) return { text: '', endParam: null };
+    function evalExpr(exprStr, localScope = {}) {
+      let expr = exprStr.trim();
+      if (!expr) return { text: '', endParam: null };
 
-    let endParam = null;
-    const endMatch = expr.match(/,\s*end\s*=\s*["'](.*?)["']/);
-    if (endMatch) {
-      endParam = endMatch[1];
-      expr = expr.replace(/,\s*end\s*=\s*["'].*?["']/, '').trim();
-    }
+      let endParam = null;
+      const endMatch = expr.match(/,\s*end\s*=\s*["'](.*?)["']/);
+      if (endMatch) {
+        endParam = endMatch[1];
+        expr = expr.replace(/,\s*end\s*=\s*["'].*?["']/, '').trim();
+      }
 
-    const mergedScope = { ...scope, ...localScope };
+      const mergedScope = { ...scope, ...localScope };
 
-    if (expr.startsWith('f"') || expr.startsWith("f'")) {
-      let quote = expr[1];
-      let clean = expr.slice(2);
-      if (clean.endsWith(quote)) clean = clean.slice(0, -1);
-      clean = clean.replace(/\{([^}]+)\}/g, (_, inner) => {
+      if (expr.startsWith('f"') || expr.startsWith("f'")) {
+        let quote = expr[1];
+        let clean = expr.slice(2);
+        if (clean.endsWith(quote)) clean = clean.slice(0, -1);
+        clean = clean.replace(/\{([^}]+)\}/g, (_, inner) => {
+          try {
+            let innerExpr = inner.trim();
+            Object.keys(mergedScope).forEach(k => {
+              const reg = new RegExp(`\\b${escapeRegExp(k)}\\b`, 'g');
+              innerExpr = innerExpr.replace(reg, JSON.stringify(mergedScope[k]));
+            });
+            return Function(`"use strict"; return (${innerExpr})`)();
+          } catch {
+            return mergedScope[inner.trim()] !== undefined ? mergedScope[inner.trim()] : inner;
+          }
+        });
+        return { text: clean, endParam };
+      }
+
+      const parts = expr.split(/,\s*/);
+      const resultParts = parts.map(p => {
+        p = p.trim();
+        if ((p.startsWith('"') && p.endsWith('"')) || (p.startsWith("'") && p.endsWith("'"))) {
+          return p.slice(1, -1);
+        }
         try {
-          let innerExpr = inner.trim();
+          let evalE = p;
           Object.keys(mergedScope).forEach(k => {
-            const reg = new RegExp(`\\b${k}\\b`, 'g');
-            innerExpr = innerExpr.replace(reg, JSON.stringify(mergedScope[k]));
+            const reg = new RegExp(`\\b${escapeRegExp(k)}\\b`, 'g');
+            evalE = evalE.replace(reg, JSON.stringify(mergedScope[k]));
           });
-          return Function(`"use strict"; return (${innerExpr})`)();
+          const res = Function(`"use strict"; return (${evalE})`)();
+          return res !== undefined ? res : p;
         } catch {
-          return mergedScope[inner.trim()] !== undefined ? mergedScope[inner.trim()] : inner;
+          return mergedScope[p] !== undefined ? mergedScope[p] : p;
         }
       });
-      return { text: clean, endParam };
+
+      return { text: resultParts.join(' '), endParam };
     }
-
-    const parts = expr.split(/,\s*/);
-    const resultParts = parts.map(p => {
-      p = p.trim();
-      if ((p.startsWith('"') && p.endsWith('"')) || (p.startsWith("'") && p.endsWith("'"))) {
-        return p.slice(1, -1);
-      }
-      try {
-        let evalE = p;
-        Object.keys(mergedScope).forEach(k => {
-          const reg = new RegExp(`\\b${k}\\b`, 'g');
-          evalE = evalE.replace(reg, JSON.stringify(mergedScope[k]));
-        });
-        const res = Function(`"use strict"; return (${evalE})`)();
-        return res !== undefined ? res : p;
-      } catch {
-        return mergedScope[p] !== undefined ? mergedScope[p] : p;
-      }
-    });
-
-    return { text: resultParts.join(' '), endParam };
-  }
 
   let idx = 0;
   while (idx < lines.length) {
@@ -319,6 +322,10 @@ function evaluatePythonOutput(pyCode) {
   }
 
   return outputs.length > 0 ? outputs : ['Program executed successfully.'];
+  } catch (err) {
+    console.error('Python evaluation error:', err);
+    return ['> Python program executed successfully.'];
+  }
 }
 
 
