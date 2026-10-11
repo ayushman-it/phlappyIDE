@@ -376,6 +376,54 @@ function evaluateCppOutput(cppCode) {
   return outputs.length > 0 ? outputs : ['Hello, C++ World!'];
 }
 
+// JavaScript Console Output Evaluator Engine
+export function evaluateJSConsoleLogs(jsCode) {
+  const logs = [];
+  if (!jsCode || !jsCode.trim()) return logs;
+
+  try {
+    const sandboxConsole = {
+      log: (...args) => logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')),
+      warn: (...args) => logs.push('[WARN] ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')),
+      error: (...args) => logs.push('[ERROR] ' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '))
+    };
+
+    // Replace const and let with var so re-declarations across steps in the same lesson don't fail
+    const sanitizedCode = jsCode
+      .replace(/\bconst\s+/g, 'var ')
+      .replace(/\blet\s+/g, 'var ');
+
+    const runner = new Function('console', sanitizedCode);
+    runner(sandboxConsole);
+  } catch (err) {
+    // Fallback: extract console.log/warn/error strings using regex if DOM or complex runtime issue
+    const lines = jsCode.split('\n');
+    for (const line of lines) {
+      const match = line.match(/console\.(?:log|warn|error)\((.*?)\);?/);
+      if (match) {
+        logs.push(match[1].replace(/['"`]/g, '').trim());
+      }
+    }
+  }
+
+  return logs;
+}
+
+// Helper to move cursor dynamically to RightPanel tab button
+function moveCursorToTab(tabId, fallbackX, fallbackY = 110) {
+  const store = useStudioStore.getState();
+  const el = document.getElementById(tabId);
+  if (el) {
+    const rect = el.getBoundingClientRect();
+    store.setCursorPosition({
+      x: Math.round(rect.left + rect.width / 2),
+      y: Math.round(rect.top + rect.height / 2)
+    });
+  } else {
+    store.setCursorPosition({ x: fallbackX, y: fallbackY });
+  }
+}
+
 class TeachingEngine {
   constructor() {
     this.timer = null;
@@ -564,53 +612,13 @@ class TeachingEngine {
         }
 
         await this.typeCodeIntoFile(targetFile, step.code || '');
-
-        // AUTO-DISPLAY OUTPUT RIGHT AFTER EXAMPLE CODE WRITING
-        await this.delay(400);
-        const currentEnv = store.environment;
-        const codeText = step.code || '';
-        if (currentEnv === 'PYTHON_BASIC' || currentEnv === 'C_BASIC' || currentEnv === 'CPP_BASIC') {
-          store.setActiveRightTab('terminal');
-          store.clearTerminalLogs();
-          if (currentEnv === 'C_BASIC') {
-            store.addTerminalLog(`$ gcc main.c -o main && ./main`);
-            store.addTerminalLog(`[GCC 13.2 Output]:`);
-            const cOuts = evaluateCOutput(store.files['main.c'] || codeText);
-            for (const outLine of cOuts) {
-              store.addTerminalLog(`> ${outLine}`);
-              await this.delay(450);
-            }
-          } else if (currentEnv === 'CPP_BASIC') {
-            store.addTerminalLog(`$ g++ main.cpp -o main && ./main`);
-            store.addTerminalLog(`[G++ 13.2 Output]:`);
-            const cppOuts = evaluateCppOutput(store.files['main.cpp'] || codeText);
-            for (const outLine of cppOuts) {
-              store.addTerminalLog(`> ${outLine}`);
-              await this.delay(450);
-            }
-          } else {
-            store.addTerminalLog(`$ python ${targetFile}`);
-            store.addTerminalLog(`[Python 3.11 Output]:`);
-            const pyOuts = evaluatePythonOutput(store.files['main.py'] || codeText);
-            for (const outLine of pyOuts) {
-              store.addTerminalLog(`> ${outLine}`);
-              await this.delay(450);
-            }
-          }
-        } else {
-          if (codeText.includes('console.log') || codeText.includes('console.warn') || codeText.includes('console.error')) {
-            store.setActiveRightTab('console');
-          } else {
-            store.setActiveRightTab('preview');
-          }
-        }
-        // Observation pause after showing output
-        await this.delay(2500);
+        // Clean focus pause after typing code - do not prematurely switch tabs!
+        await this.delay(1200);
         break;
 
       case 'show_preview':
-        store.setCursorPosition({ x: 800, y: 165 });
-        await this.delay(500);
+        moveCursorToTab('btn-tab-preview', window.innerWidth - 350, 110);
+        await this.delay(600);
         store.triggerCursorClick();
         store.setActiveRightTab('preview');
         if (step.text) {
@@ -621,11 +629,24 @@ class TeachingEngine {
         break;
 
       case 'show_console':
-        store.setCursorPosition({ x: 920, y: 165 });
-        await this.delay(500);
+        moveCursorToTab('btn-tab-console', window.innerWidth - 210, 110);
+        await this.delay(600);
         store.triggerCursorClick();
-        store.clearConsoleLogs();
         store.setActiveRightTab('console');
+        store.clearConsoleLogs();
+
+        // Dynamically evaluate and stream live console output line-by-line!
+        const jsCodeForConsole = store.files['script.js'] || store.files[store.activeFile] || '';
+        const evaluatedConsoleLogs = evaluateJSConsoleLogs(jsCodeForConsole);
+        if (evaluatedConsoleLogs.length > 0) {
+          for (const logItem of evaluatedConsoleLogs) {
+            store.addConsoleLog('log', logItem);
+            await this.delay(400);
+          }
+        } else {
+          store.addConsoleLog('log', '> Program executed with no console errors.');
+        }
+
         if (step.text) {
           store.setFlappySpeech(step.text, 'speaking');
           await this.speakSpeech(step.text);
@@ -634,8 +655,8 @@ class TeachingEngine {
         break;
 
       case 'show_terminal':
-        store.setCursorPosition({ x: 1040, y: 165 });
-        await this.delay(500);
+        moveCursorToTab('btn-tab-terminal', window.innerWidth - 70, 110);
+        await this.delay(600);
         store.triggerCursorClick();
         store.setActiveRightTab('terminal');
         if (step.text) {
@@ -647,8 +668,8 @@ class TeachingEngine {
 
       case 'click_element':
         store.setActiveRightTab('preview');
-        store.setCursorPosition({ x: 920, y: 280 });
-        await this.delay(700);
+        moveCursorToTab('btn-tab-preview', window.innerWidth - 350, 110);
+        await this.delay(500);
         store.triggerCursorClick();
 
         const iframe = document.querySelector('#sandbox-preview-iframe');
@@ -662,8 +683,8 @@ class TeachingEngine {
         break;
 
       case 'run_code':
-        store.setCursorPosition({ x: 1040, y: 165 });
-        await this.delay(500);
+        moveCursorToTab('btn-tab-terminal', window.innerWidth - 70, 110);
+        await this.delay(600);
         store.triggerCursorClick();
         store.setActiveRightTab('terminal');
         store.clearTerminalLogs();
@@ -678,7 +699,7 @@ class TeachingEngine {
           const evaluatedCOutputs = evaluateCOutput(cCode);
           for (const outLine of evaluatedCOutputs) {
             store.addTerminalLog(`> ${outLine}`);
-            await this.delay(300);
+            await this.delay(350);
           }
         } else if (runEnv === 'CPP_BASIC') {
           store.addTerminalLog(`$ g++ main.cpp -o main && ./main`);
@@ -689,19 +710,28 @@ class TeachingEngine {
           const evaluatedCppOutputs = evaluateCppOutput(cppCode);
           for (const outLine of evaluatedCppOutputs) {
             store.addTerminalLog(`> ${outLine}`);
-            await this.delay(300);
+            await this.delay(350);
           }
-        } else {
+        } else if (runEnv === 'PYTHON_BASIC') {
           store.addTerminalLog(`$ python ${store.activeFile || 'main.py'}`);
           store.addTerminalLog(`[Python 3.11 Execution Output]:`);
           await this.delay(400);
 
           const pyCode = store.files['main.py'] || store.files[store.activeFile] || '';
           const evaluatedOutputs = evaluatePythonOutput(pyCode);
-
           for (const outLine of evaluatedOutputs) {
             store.addTerminalLog(`> ${outLine}`);
-            await this.delay(300);
+            await this.delay(350);
+          }
+        } else {
+          // JS / Node environment
+          store.addTerminalLog(`$ node ${store.activeFile || 'script.js'}`);
+          await this.delay(400);
+          const jsCode = store.files['script.js'] || store.files[store.activeFile] || '';
+          const evaluatedLogs = evaluateJSConsoleLogs(jsCode);
+          for (const outLine of evaluatedLogs) {
+            store.addTerminalLog(`> ${outLine}`);
+            await this.delay(350);
           }
         }
 

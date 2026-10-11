@@ -1,58 +1,75 @@
-// Groq LLM API Service for Deep Pedagogy: Intro -> Pre-Write Explanation -> Exact Line-by-Line Code & Comments
+const OPENROUTER_API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_OPENROUTER_API_KEY) || (typeof process !== 'undefined' && process.env?.VITE_OPENROUTER_API_KEY) || '';
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const PRIMARY_MODEL = 'meta-llama/llama-3.3-70b-instruct';
+const FALLBACK_MODEL = 'meta-llama/llama-3.1-8b-instruct';
 
-const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
-const MODEL_NAME = 'llama-3.3-70b-versatile';
-const FALLBACK_MODEL_NAME = 'llama-3.1-8b-instant';
+const GROQ_API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GROQ_API_KEY) || '';
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
 const SYSTEM_PROMPT = `
-You are Phlappy, a friendly and expert AI Master Instructor for TCM One Code Studio.
-You teach programming topics like an engaging, clear, and passionate HUMAN MENTOR standing in front of a live classroom!
+You are Phlappy, an expert, warm, and highly engaging AI Master Teacher & Coding Mentor for TCM One Code Studio.
+You teach students just like a passionate human mentor / bhaiya standing in front of a live coding workshop!
+Your voice is natural, clear, encouraging, and speaks in authentic conversational Hinglish (blend of Hindi and easy English programming terms).
 
-PEDAGOGY GUIDELINES:
-1. TOPIC INTRO ("speak"):
-   - Start with a warm, natural Hinglish intro (3-5 sentences) introducing the topic definition, a simple real-life analogy, and why it matters in real projects.
+KEY TEACHING & PEDAGOGY RULES:
+1. WARM, HUMAN CONVERSATIONAL INTRO ("speak"):
+   - Greet warmly: "Namaste dosto! Main Phlappy hoon aur aaj hum seekhenge..."
+   - Explain the concept simply in 3-4 natural sentences with an intuitive, everyday real-life analogy (e.g. storage box/dabba, recipe, water pipeline).
+   - Tell why companies and developers use this in real software.
 
-2. BEFORE WRITING CODE ("speak"):
-   - Briefly tell the student what example code you are going to write (e.g., "Aao sabse pehle editor me definition comments aur simple example write karte hain.").
+2. PRE-WRITE ANNOUNCEMENT ("speak"):
+   - BEFORE writing code, inform the student what code and comments you are going to write in the editor.
+   - Example: "Aao sabse pehle editor me iska structured definition comments aur ek clear practical example write karte hain."
 
-3. DEFINITION COMMENTS (Inside "write_code"):
-   - Write clean, structured header comments (4-6 lines) covering Definition, Purpose, and Rules.
+3. CODE WITH DEFINITION COMMENTS ("write_code"):
+   - Always start the file with 4-5 lines of clean header comments explaining Definition, Purpose, and Syntax.
+   - Follow with clean, readable, beginner-friendly working code. Include clear line comments.
 
-4. CODE EXPLANATION ("speak"):
-   - Explain the code clearly line by line (Line 1, Line 2...) explaining what each line does in simple, human Hinglish.
+4. POST-WRITE LINE-BY-LINE EXPLANATION ("speak"):
+   - Explain the code smoothly line-by-line (e.g., "Line 1 me humne 'var name = ...' se variable declare kiya jo...").
+   - Keep the tone super clear, relatable, and easy to follow.
 
-5. OUTPUT ANALYSIS ("speak"):
-   - After showing preview/console/terminal output, explain what got printed on screen and why.
+5. PRE-OUTPUT TRANSITION & OUTPUT INSPECTION:
+   - Transition speech ("speak"): "Aao ab console/terminal tab open karke live output check karte hain ki actually kya result aaya!"
+   - Tab switch step:
+     * For JavaScript with console.log: Use "show_console".
+     * For HTML/CSS visual apps: Use "show_preview".
+     * For C, C++, Python: Use "show_terminal" followed by "run_code".
+   - Output explanation speech ("speak"): Explain what appeared on the screen/console and why.
 
 6. CONCLUSION ("conclude"):
-   - Give a warm, encouraging recap of what we learned.
+   - Give an encouraging wrap-up: "Toh dosto, yeh tha hamara topic! Practice karte rahiye aur concepts clear rakhein."
 
-LANGUAGE & ENVIRONMENT RULES:
-- C: Environment "C_BASIC", main file "main.c", includes <stdio.h>, uses printf().
-- C++: Environment "CPP_BASIC", main file "main.cpp", includes <iostream>, uses cout.
-- Python: Environment "PYTHON_BASIC", main file "main.py", uses print().
-- HTML/CSS/JS: Environment "HTML_CSS_JS", main files "index.html", "style.css", "script.js".
+ENVIRONMENT & FILE CONVENTIONS:
+- C: Environment "C_BASIC", file "main.c", includes <stdio.h>, uses printf().
+- C++: Environment "CPP_BASIC", file "main.cpp", includes <iostream>, uses cout.
+- Python: Environment "PYTHON_BASIC", file "main.py", uses print().
+- HTML/CSS/JS: Environment "HTML_CSS_JS", files "index.html", "style.css", "script.js".
 
-STRICTLY RETURN VALID JSON ONLY:
+STRICT FORMAT REQUIREMENTS:
+- Return ONLY valid JSON (no markdown fences, no explanatory text outside JSON).
+- The JSON must follow this exact structure:
 {
   "title": "Topic Name",
   "environment": "HTML_CSS_JS" | "PYTHON_BASIC" | "C_BASIC" | "CPP_BASIC",
   "syllabus": [
     { "id": 1, "title": "Module 1: Concept Introduction", "description": "...", "status": "pending" },
-    { "id": 2, "title": "Module 2: Code Structure & Definition", "description": "...", "status": "pending" },
+    { "id": 2, "title": "Module 2: Definition & Structure", "description": "...", "status": "pending" },
     { "id": 3, "title": "Module 3: Code Implementation", "description": "...", "status": "pending" },
-    { "id": 4, "title": "Module 4: Output Analysis", "description": "...", "status": "pending" },
-    { "id": 5, "title": "Module 5: Summary", "description": "...", "status": "pending" }
+    { "id": 4, "title": "Module 4: Live Output Analysis", "description": "...", "status": "pending" },
+    { "id": 5, "title": "Module 5: Summary & Takeaways", "description": "...", "status": "pending" }
   ],
   "steps": [
-    { "type": "speak", "text": "Hinglish intro speech introducing definition and real-world analogy..." },
+    { "type": "speak", "text": "Namaste dosto! ..." },
     { "type": "open_file", "file": "script.js" },
     { "type": "speak", "text": "Aao editor me definition comments aur example code write karte hain." },
-    { "type": "write_code", "file": "script.js", "code": "// DEFINITION: ...\n..." },
-    { "type": "speak", "text": "Line 1 me ... Line 2 me ... Clear breakdown." },
+    { "type": "write_code", "file": "script.js", "code": "// ..." },
+    { "type": "speak", "text": "Line 1 me ... Line 2 me ..." },
+    { "type": "speak", "text": "Aao ab Console tab open karke live output inspect karte hain!" },
     { "type": "show_console" },
-    { "type": "speak", "text": "Output explanation..." },
-    { "type": "conclude", "text": "Encouraging summary..." }
+    { "type": "speak", "text": "Dekhiye console me ..." },
+    { "type": "conclude", "text": "Toh dosto, yeh tha ..." }
   ]
 }
 `;
@@ -78,15 +95,12 @@ function getRichFallbackLesson(topic, envKey) {
         { type: 'write_code', file: 'main.cpp', code: `// =========================================================\n// DEFINITION: C++ ${topic}\n// - Purpose: Structured data handling and fast execution.\n// =========================================================\n\n#include <iostream>\n#include <string>\nusing namespace std;\n\nint main() {\n    cout << "=== Phlappy AI Teacher: ${topic} ===" << endl;\n` },
         { type: 'speak', text: `Sabse pehle humne file top par definition comments aur standard main function setup likha.` },
         { type: 'speak', text: `Ab hum Example 1 ka C++ code write karte hain.` },
-        { type: 'write_code', file: 'main.cpp', code: `    // Line 1: Student Name variable\n    string studentName = "Phlappy C++ Learner";\n    // Line 2: Marks variable\n    int totalMarks = 485;\n    // Line 3: Output information\n    cout << "Student: " << studentName << " | Marks: " << totalMarks << endl;\n` },
+        { type: 'write_code', file: 'main.cpp', code: `    // Line 1: Student Name variable\n    string studentName = "Phlappy C++ Learner";\n    // Line 2: Marks variable\n    int totalMarks = 485;\n    // Line 3: Output information\n    cout << "Student: " << studentName << " | Marks: " << totalMarks << endl;\n    return 0;\n}\n` },
         { type: 'speak', text: `Line 1 me string variable studentName me text store kiya. Line 2 me totalMarks me number 485 store kiya. Line 3 me cout stream se values screen par print kar rahe hain.` },
+        { type: 'speak', text: `Aao ab terminal open karke code compile aur run karte hain!` },
         { type: 'show_terminal' },
         { type: 'run_code' },
         { type: 'speak', text: `Terminal me dekhiye student name aur marks 485 bilkul clean display ho rahe hain.` },
-        { type: 'write_code', file: 'main.cpp', code: `    // Line 4: Calculate Percentage\n    double percentage = (totalMarks / 500.0) * 100;\n    cout << "Calculated Percentage: " << percentage << "%" << endl;\n    return 0;\n}\n` },
-        { type: 'speak', text: `Line 4 me percentage calculate karke print ki aur return 0 se program complete hua.` },
-        { type: 'show_terminal' },
-        { type: 'run_code' },
         { type: 'conclude', text: `Toh dosto, yeh tha ${topic} in C++! Practice karte rahiye aur concepts clear rakhein.` }
       ]
     };
@@ -103,16 +117,13 @@ function getRichFallbackLesson(topic, envKey) {
         { type: 'speak', text: `Aao main.c file me ${topic} ki definition comments write karte hain.` },
         { type: 'write_code', file: 'main.c', code: `/* =========================================================\n   DEFINITION: C Language ${topic}\n   - Purpose: Direct memory handling & fast execution.\n   ========================================================= */\n\n#include <stdio.h>\n\nint main() {\n    printf("=== Phlappy AI Teacher: ${topic} ===\\n");\n` },
         { type: 'speak', text: `Sabse pehle main.c top par definition comments aur stdio.h library setup ki.` },
-        { type: 'speak', text: `Ab Example 1 का C code write karte hain.` },
-        { type: 'write_code', file: 'main.c', code: `    // Line 1: Student ID variable\n    int student_id = 101;\n    // Line 2: Print formatted integer\n    printf("Student ID: %d\\n", student_id);\n` },
+        { type: 'speak', text: `Ab Example 1 ka C code write karte hain.` },
+        { type: 'write_code', file: 'main.c', code: `    // Line 1: Student ID variable\n    int student_id = 101;\n    // Line 2: Print formatted integer\n    printf("Student ID: %d\\n", student_id);\n    return 0;\n}\n` },
         { type: 'speak', text: `Line 1 me student_id 101 initialize hua. Line 2 me printf ke %d specifier se ID print hui.` },
+        { type: 'speak', text: `Aao ab terminal open karke code compile aur run karte hain!` },
         { type: 'show_terminal' },
         { type: 'run_code' },
         { type: 'speak', text: `Terminal output me Student ID 101 print ho gaya.` },
-        { type: 'write_code', file: 'main.c', code: `    // Line 3: Score float variable\n    float score = 98.5;\n    printf("Final Score: %.2f\\n", score);\n    return 0;\n}\n` },
-        { type: 'speak', text: `Line 3 me float score 98.5 store hua aur printf me %.2f specifier se print kiya.` },
-        { type: 'show_terminal' },
-        { type: 'run_code' },
         { type: 'conclude', text: `Toh dosto, C language me format specifiers aur clean variables se program working banta hai.` }
       ]
     };
@@ -132,13 +143,10 @@ function getRichFallbackLesson(topic, envKey) {
         { type: 'speak', text: `Ab Example 1 ka Python code write karte hain.` },
         { type: 'write_code', file: 'main.py', code: `# Example 1: Loop iteration (0 se 4 tak)\nfor i in range(5):\n    print("Iteration index:", i)\n` },
         { type: 'speak', text: `Line 'for i in range(5):' 0 se 4 tak values generate karega. Indented print statement har iteration me index print karega.` },
+        { type: 'speak', text: `Aao ab terminal open karke Python code run karte hain!` },
         { type: 'show_terminal' },
         { type: 'run_code' },
         { type: 'speak', text: `Terminal me dekhiye 0 se 4 tak output aagaya.` },
-        { type: 'write_code', file: 'main.py', code: `\n# Example 2: While loop sum\ncounter = 1\ntotal = 0\nwhile counter <= 5:\n    total += counter\n    counter += 1\nprint("Calculated Total Sum:", total)\n` },
-        { type: 'speak', text: `Here while loop 1 se 5 tak numbers ko add karke total sum calculate karta hai.` },
-        { type: 'show_terminal' },
-        { type: 'run_code' },
         { type: 'conclude', text: `Toh dosto, Python me clean indentation se code easy aur readable lagta hai.` }
       ]
     };
@@ -158,11 +166,9 @@ function getRichFallbackLesson(topic, envKey) {
       { type: 'speak', text: `Ab Example 1 ka code write karte hain.` },
       { type: 'write_code', file: 'script.js', code: `// Line 1: Global var declaration\nvar studentName = "Phlappy AI Learner";\n\n// Line 2: Block let declaration\nlet totalMarks = 95;\n\n// Line 3: Block const declaration\nconst PASSING_MARKS = 40;\n\nconsole.log("Student Name:", studentName);\nconsole.log("Total Marks:", totalMarks, "| Passing Threshold:", PASSING_MARKS);\n` },
       { type: 'speak', text: `Line 1 me var studentName store hua. Line 2 me let totalMarks 95 store hua. Line 3 me const PASSING_MARKS set hua. Line 4-5 console par output print kar rahe hain.` },
+      { type: 'speak', text: `Aao ab Console tab open karke live output check karte hain!` },
       { type: 'show_console' },
       { type: 'speak', text: `Console me student name 'Phlappy AI Learner' aur total marks 95 bilkul clean log ho gaye.` },
-      { type: 'write_code', file: 'script.js', code: `\n// Example 2: Scope test\nif (true) {\n  var globalScopeVar = "I am visible everywhere!";\n  let blockScopeLet = "I am restricted inside this block!";\n}\nconsole.log(globalScopeVar);\n` },
-      { type: 'speak', text: `if-block ke andar var variable block ke bahar bhi visible rehta hai, jabki let variable block ke andar restricted rehta hai.` },
-      { type: 'show_console' },
       { type: 'conclude', text: `Toh dosto, yeh tha ${topic}! Modern JavaScript me always let aur const use karein.` }
     ]
   };
@@ -200,18 +206,49 @@ export async function generateLessonFromGroq({ topic, language = 'Hinglish', dif
   else if (isC) actualEnv = 'C_BASIC';
   else if (isPython) actualEnv = 'PYTHON_BASIC';
 
-  const prompt = `Generate a deep 3 to 4 minute topic-specific lesson for Topic: "${topic}". Difficulty: ${difficulty}. Language: ${language}. Environment: ${actualEnv}.
-Requirements:
-1. Provide a 5-module "syllabus" array breaking down the lesson roadmap for "${topic}".
-2. Generate 14 to 20 detailed sequential steps ("speak", "open_file", "write_code", "show_console"/"show_preview"/"show_terminal", "run_code", "conclude").
-3. MANDATORY STEP 1: Step 1 MUST be a rich Hinglish "speak" introduction introducing the topic definition, real-world use, and why we use it.
-4. PRE-WRITE EXPLANATION: BEFORE writing code or comments in "write_code", include a "speak" step announcing WHAT you are about to write/comment (e.g. "Aao sabse pehle editor me definition comments write karte hain...").
-5. MANDATORY DEFINITION COMMENTS: The first "write_code" step MUST write 4 to 6 lines of code comments containing the DEFINITION & CONCEPT of "${topic}".
-6. EXACT LINE-BY-LINE BREAKDOWN: The "speak" step AFTER "write_code" MUST explain every line by stating the EXACT line number and exact code snippet (e.g. "Line 1 me 'var a = 10;' se...").
-7. PRE-PANEL ANNOUNCEMENT: Before opening console/terminal, include a "speak" step ("Aao ab Console/Terminal panel open karke live output inspect karte hain...").`;
+  const prompt = `Generate an engaging, high-quality, human-style programming lesson for Topic: "${topic}".
+Difficulty: ${difficulty}. Language: ${language}. Environment: ${actualEnv}.
 
-  const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-  const fetchWithModel = async (selectedModel) => {
+PEDAGOGICAL STRUCTURE (Follow this exact sequence):
+1. SYLLABUS: 5 logical modules (Concept Intro, Definition & Structure, Code Implementation, Live Output Analysis, Summary).
+2. STEP 1 (speak): Warm, passionate Hinglish intro explaining what ${topic} is, a clear real-life analogy, and where it is used.
+3. STEP 2 (open_file): Open the main file (script.js, main.py, main.c, or main.cpp).
+4. STEP 3 (speak): Pre-write announcement (e.g. "Aao sabse pehle editor me iska definition comments aur clean example code likhte hain.").
+5. STEP 4 (write_code): Clean working code starting with 4-5 lines of definition header comments followed by readable example code.
+6. STEP 5 (speak): Smooth line-by-line breakdown (e.g. "Line 1 me... Line 2 me...") explaining each line in plain, human Hinglish.
+7. STEP 6 (speak): Transition to output (e.g. "Aao ab Console tab open karke live output inspect karte hain ki kya result aaya!").
+8. STEP 7 (show_console / show_terminal / show_preview):
+   - For JS with console.log: "show_console"
+   - For C / C++ / Python: "show_terminal" followed immediately by "run_code"
+   - For HTML/CSS: "show_preview"
+9. STEP 8 (speak): Output explanation explaining what is displayed on the screen and why.
+10. STEP 9 (conclude): Warm encouraging summary and practice tip.
+
+Return ONLY the raw JSON object matching the required schema. No markdown formatting.`;
+
+  const fetchOpenRouter = async (modelToUse) => {
+    return await fetch(OPENROUTER_API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173/',
+        'X-Title': 'TCM One Phlappy IDE'
+      },
+      body: JSON.stringify({
+        model: modelToUse,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.3,
+        max_tokens: 3800
+      })
+    });
+  };
+
+  const fetchGroq = async (modelToUse) => {
     return await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: {
@@ -219,28 +256,51 @@ Requirements:
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: selectedModel,
+        model: modelToUse,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.2,
+        temperature: 0.3,
         max_tokens: 3800
       })
     });
   };
 
   try {
-    let response = await fetchWithModel(MODEL_NAME);
-    if (!response.ok) {
-      console.warn(`Groq Primary Model (${MODEL_NAME}) failed, retrying with fallback model (${FALLBACK_MODEL_NAME})...`);
-      response = await fetchWithModel(FALLBACK_MODEL_NAME);
+    let response = null;
+
+    // 1. Primary Attempt: OpenRouter (Llama 3.3 70b)
+    try {
+      response = await fetchOpenRouter(PRIMARY_MODEL);
+    } catch (e) {
+      console.warn('OpenRouter primary fetch network error:', e);
     }
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Groq API Error (${response.status}): ${errText}`);
+    // 2. OpenRouter Fallback Model (Llama 3.1 8b)
+    if (!response || !response.ok) {
+      console.warn(`OpenRouter Primary (${PRIMARY_MODEL}) failed, trying fallback (${FALLBACK_MODEL})...`);
+      try {
+        response = await fetchOpenRouter(FALLBACK_MODEL);
+      } catch (e) {
+        console.warn('OpenRouter fallback fetch network error:', e);
+      }
+    }
+
+    // 3. Groq API Fallback (if Groq key is configured)
+    if ((!response || !response.ok) && GROQ_API_KEY) {
+      console.warn('OpenRouter calls failed, falling back to Groq API...');
+      try {
+        response = await fetchGroq(GROQ_MODEL);
+      } catch (e) {
+        console.warn('Groq fetch network error:', e);
+      }
+    }
+
+    if (!response || !response.ok) {
+      const errStatus = response ? response.status : 'Network error';
+      throw new Error(`LLM API Generation failed (${errStatus})`);
     }
 
     const data = await response.json();
@@ -256,59 +316,48 @@ Requirements:
       envKey = 'C_BASIC';
     }
 
-    const normalizedSteps = [];
     const rawSteps = lessonData.steps || [];
-    let defaultFile = envKey === 'CPP_BASIC' ? 'main.cpp' : envKey === 'C_BASIC' ? 'main.c' : envKey === 'PYTHON_BASIC' ? 'main.py' : 'index.html';
+    let defaultFile = envKey === 'CPP_BASIC' ? 'main.cpp' : envKey === 'C_BASIC' ? 'main.c' : envKey === 'PYTHON_BASIC' ? 'main.py' : 'script.js';
+    if (envKey === 'HTML_CSS_JS' && isHtmlTopic) defaultFile = 'index.html';
+
     let currentOpenFileName = defaultFile;
+    const normalizedSteps = [];
 
-    const expandedRawSteps = [];
-    for (const step of rawSteps) {
-      let stepType = step.type ? String(step.type).toLowerCase() : 'speak';
-      if (stepType === 'code' || stepType === 'write' || stepType === 'coding') stepType = 'write_code';
+    // Step-by-step normalization: supports both 'type' and 'action'
+    for (const rawStep of rawSteps) {
+      let rawType = rawStep.type || rawStep.action || 'speak';
+      let stepType = String(rawType).toLowerCase().trim();
 
-      if (stepType === 'write_code' && step.code) {
-        const exampleSplitRegex = /(?=(?:\/\/|#|\/\*)\s*Example\s*\d+:?)/i;
-        const chunks = step.code.split(exampleSplitRegex).map(c => c.trim()).filter(Boolean);
-
-        if (chunks.length > 1) {
-          chunks.forEach((chunk, idx) => {
-            expandedRawSteps.push({
-              type: 'speak',
-              text: `Ab hum Example ${idx + 1} ka code write karne ja rahe hain...`
-            });
-            expandedRawSteps.push({
-              type: 'write_code',
-              file: step.file || defaultFile,
-              code: chunk,
-              text: `Writing Example ${idx + 1}...`
-            });
-            expandedRawSteps.push({
-              type: 'speak',
-              text: `Aao Example ${idx + 1} ko exact line-by-line samjhte hain aur iska output check karte hain.`
-            });
-          });
-          continue;
-        }
-      }
-      expandedRawSteps.push(step);
-    }
-
-    for (const rawStep of expandedRawSteps) {
-      let stepType = rawStep.type ? String(rawStep.type).toLowerCase() : 'speak';
-
+      // Normalize step action aliases
       if (stepType === 'code' || stepType === 'write' || stepType === 'coding') {
         stepType = 'write_code';
-      } else if (stepType === 'explanation' || stepType === 'lecture' || stepType === 'info' || stepType === 'intro') {
+      } else if (['explanation', 'lecture', 'info', 'intro', 'say', 'talk', 'speech'].includes(stepType)) {
         stepType = 'speak';
-      } else if (stepType === 'summary' || stepType === 'exercise' || stepType === 'end') {
+      } else if (['summary', 'exercise', 'end', 'finish', 'conclusion'].includes(stepType)) {
         stepType = 'conclude';
+      } else if (stepType === 'console') {
+        stepType = 'show_console';
+      } else if (stepType === 'terminal') {
+        stepType = 'show_terminal';
+      } else if (stepType === 'preview') {
+        stepType = 'show_preview';
+      } else if (stepType === 'run' || stepType === 'execute') {
+        stepType = 'run_code';
+      } else if (stepType === 'open') {
+        stepType = 'open_file';
       }
 
-      let targetFile = (envKey === 'CPP_BASIC' || envKey === 'C_BASIC' || envKey === 'PYTHON_BASIC') ? defaultFile : (rawStep.file || defaultFile);
+      let targetFile = (envKey === 'CPP_BASIC' || envKey === 'C_BASIC' || envKey === 'PYTHON_BASIC')
+        ? defaultFile
+        : (rawStep.file || defaultFile);
+
       if (!targetFile && envKey === 'HTML_CSS_JS') {
-        targetFile = stepType === 'write_code' ? (rawStep.code && rawStep.code.includes('<html') ? 'index.html' : (isHtmlTopic ? 'index.html' : 'script.js')) : currentOpenFileName;
+        targetFile = stepType === 'write_code'
+          ? (rawStep.code && rawStep.code.includes('<html') ? 'index.html' : (isHtmlTopic ? 'index.html' : 'script.js'))
+          : currentOpenFileName;
       }
 
+      // If writing code to a different file, ensure an open_file step precedes it
       if (stepType === 'write_code' && targetFile && targetFile !== currentOpenFileName) {
         normalizedSteps.push({
           type: 'open_file',
@@ -345,51 +394,38 @@ Requirements:
       }
     }
 
-    const finalSteps = [];
+    // Check if the lesson sequence already contains an output inspection step
+    const hasConsoleStep = normalizedSteps.some(s => s.type === 'show_console');
+    const hasTerminalStep = normalizedSteps.some(s => s.type === 'show_terminal' || s.type === 'run_code');
+    const hasPreviewStep = normalizedSteps.some(s => s.type === 'show_preview');
+    const hasAnyOutputStep = hasConsoleStep || hasTerminalStep || hasPreviewStep;
     const isTerminalEnv = envKey === 'PYTHON_BASIC' || envKey === 'C_BASIC' || envKey === 'CPP_BASIC';
 
-    for (let i = 0; i < normalizedSteps.length; i++) {
-      const currentStep = normalizedSteps[i];
-      finalSteps.push(currentStep);
+    const finalSteps = [...normalizedSteps];
 
-      const isCodeOrSpeakAfterCode = currentStep.type === 'write_code' ||
-        (currentStep.type === 'speak' && i > 0 && normalizedSteps[i - 1].type === 'write_code');
+    // If the generated lesson forgot to include an output inspection step, add it right before concluding
+    if (!hasAnyOutputStep) {
+      const concludeIdx = finalSteps.findIndex(s => s.type === 'conclude');
+      const insertAt = concludeIdx !== -1 ? concludeIdx : finalSteps.length;
 
-      if (isCodeOrSpeakAfterCode) {
-        const nextStep = i + 1 < normalizedSteps.length ? normalizedSteps[i + 1] : null;
-        const isNextAlreadyRun = nextStep && (
-          nextStep.type === 'run_code' ||
-          nextStep.type === 'show_terminal' ||
-          nextStep.type === 'show_preview' ||
-          nextStep.type === 'show_console' ||
-          nextStep.type === 'click_element'
-        );
-
-        if (!isNextAlreadyRun) {
-          if (isTerminalEnv) {
-            finalSteps.push({ type: 'show_terminal' });
-            finalSteps.push({ type: 'run_code' });
-          } else {
-            const lastCodeStep = finalSteps.slice().reverse().find(s => s.type === 'write_code');
-            const codeText = lastCodeStep?.code || '';
-            if (codeText.includes('console.log') || codeText.includes('console.warn') || codeText.includes('console.error')) {
-              finalSteps.push({ type: 'show_console' });
-            } else {
-              finalSteps.push({ type: 'show_preview' });
-            }
-          }
+      const fallbackOutputSteps = [];
+      if (isTerminalEnv) {
+        fallbackOutputSteps.push({ type: 'speak', text: 'Aao ab terminal me code run karke live output check karte hain.' });
+        fallbackOutputSteps.push({ type: 'show_terminal' });
+        fallbackOutputSteps.push({ type: 'run_code' });
+      } else {
+        const lastCodeStep = finalSteps.slice().reverse().find(s => s.type === 'write_code');
+        const codeText = lastCodeStep?.code || '';
+        if (codeText.includes('console.log') || codeText.includes('console.warn') || codeText.includes('console.error')) {
+          fallbackOutputSteps.push({ type: 'speak', text: 'Aao ab console me chal kar live output check karte hain.' });
+          fallbackOutputSteps.push({ type: 'show_console' });
+        } else {
+          fallbackOutputSteps.push({ type: 'speak', text: 'Aao ab live preview open karke output dekhte hain.' });
+          fallbackOutputSteps.push({ type: 'show_preview' });
         }
       }
-    }
 
-    const hasPreview = finalSteps.some(s => s.type === 'show_preview' || s.type === 'show_terminal' || s.type === 'show_console');
-    if (!hasPreview) {
-      if (isTerminalEnv) {
-        finalSteps.push({ type: 'show_terminal' });
-        finalSteps.push({ type: 'run_code' });
-      } else {
-        finalSteps.push({ type: 'show_console' });
-      }
+      finalSteps.splice(insertAt, 0, ...fallbackOutputSteps);
     }
 
     return {
@@ -400,7 +436,7 @@ Requirements:
       steps: finalSteps
     };
   } catch (error) {
-    console.error('Groq AI Generation error:', error);
+    console.error('AI Lesson Generation error:', error);
     return getRichFallbackLesson(topic, actualEnv);
   }
 }

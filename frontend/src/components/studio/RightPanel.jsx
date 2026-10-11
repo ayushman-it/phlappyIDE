@@ -301,6 +301,7 @@ export const RightPanel = () => {
       {/* IDE Compact Right Panel Tab Headers */}
       <div className={`flex border-b border-slate-200/40 ${theme.tabsBg} h-8 transition-colors`}>
         <button
+          id="btn-tab-preview"
           onClick={() => setActiveRightTab('preview')}
           className={`flex-1 h-full text-[11px] font-bold flex items-center justify-center space-x-1 border-b-2 transition-all cursor-pointer ${
             activeRightTab === 'preview'
@@ -313,6 +314,7 @@ export const RightPanel = () => {
         </button>
 
         <button
+          id="btn-tab-console"
           onClick={() => setActiveRightTab('console')}
           className={`flex-1 h-full text-[11px] font-bold flex items-center justify-center space-x-1 border-b-2 transition-all cursor-pointer relative ${
             activeRightTab === 'console'
@@ -328,6 +330,7 @@ export const RightPanel = () => {
         </button>
 
         <button
+          id="btn-tab-terminal"
           onClick={() => setActiveRightTab('terminal')}
           className={`flex-1 h-full text-[11px] font-bold flex items-center justify-center space-x-1 border-b-2 transition-all cursor-pointer ${
             activeRightTab === 'terminal'
